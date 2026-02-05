@@ -3,66 +3,83 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
-import { vacancyApi } from "../../../../../features/vacancy/api/create-vacancy.api";
+import { vacancyApi } from "../../../../../features/vacancy/api/create-vacancy.api"; // Yo'lni tekshiring
 import { Button } from "../../../../../shared/ui/button";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
 export default function EditVacancyPage() {
-  const { id } = useParams(); // URL-dan ID-ni olamiz
+  const params = useParams();
+  const id = params?.id as string; // ID ni string qilib olamiz
   const router = useRouter();
   const queryClient = useQueryClient();
+  
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   // 1. Mavjud ma'lumotlarni yuklab olish
   const { data: vacancyData, isLoading } = useQuery({
     queryKey: ["vacancy", id],
-    queryFn: () => vacancyApi.findOne(id as string), // API-da findOne bo'lishi kerak
+    // ⚠️ TO'G'IRLANDI: findOne emas, getOne
+    queryFn: () => vacancyApi.getOne(id),
+    enabled: !!id, // ID bo'lmasa so'rov yubormasin
   });
 
   // Ma'lumot kelishi bilan formani to'ldiramiz
   useEffect(() => {
-    if (vacancyData?.data) {
-      reset(vacancyData.data);
+    if (vacancyData) {
+      // Backenddan kelgan data (ba'zan data.data ichida bo'ladi, tekshiramiz)
+      const data = vacancyData.data || vacancyData;
+      reset({
+        title: data.title,
+        description: data.description,
+        city: data.city,
+        salaryFrom: data.salaryFrom,
+        salaryTo: data.salaryTo,
+        employmentType: data.employmentType
+      });
     }
   }, [vacancyData, reset]);
 
   // 2. O'zgarishlarni saqlash (Patch)
   const mutation = useMutation({
-    mutationFn: (data: any) => vacancyApi.updateVacancy(id as string, data),
+    // ⚠️ TO'G'IRLANDI: updateVacancy emas, update
+    mutationFn: (data: any) => vacancyApi.update(id, data),
     onSuccess: () => {
-      toast.success("O'zgarishlar saqlandi!");
+      toast.success("O'zgarishlar saqlandi! ✅");
+      // Eski ma'lumotlarni keshdan o'chiramiz
       queryClient.invalidateQueries({ queryKey: ["my-vacancies"] });
+      queryClient.invalidateQueries({ queryKey: ["vacancy", id] });
       router.push("/dashboard/vacancies");
     },
-    onError: () => {
-      toast.error("Saqlashda xatolik yuz berdi.");
+    onError: (err: any) => {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Saqlashda xatolik yuz berdi.");
     }
   });
-const onSubmit = (data: any) => {
-  // Backend faqat mana shu maydonlarni qabul qiladi
-  const updateDto: any = {
-    title: data.title,
-    description: data.description,
-    city: data.city || "Toshkent",
-    // DTO string kutyapti, shuning uchun .toString() qilamiz
-    salaryFrom: data.salaryFrom ? data.salaryFrom.toString() : undefined,
-    salaryTo: data.salaryTo ? data.salaryTo.toString() : undefined,
-    // Agar employmentType bo'lsa yuboramiz
-    employmentType: data.employmentType || undefined,
-    isActive: data.isActive === undefined ? true : Boolean(data.isActive),
+
+  const onSubmit = (data: any) => {
+    // Backend faqat mana shu maydonlarni qabul qiladi
+    const updateDto: any = {
+      title: data.title,
+      description: data.description,
+      city: data.city,
+      salaryFrom: Number(data.salaryFrom), // String kelsa numberga o'tkazamiz
+      salaryTo: Number(data.salaryTo),
+      employmentType: data.employmentType,
+    };
+
+    mutation.mutate(updateDto);
   };
 
-  // Faqat qiymati bor maydonlarni yuboramiz (undefined bo'lganlarini o'chirib tashlaymiz)
-  Object.keys(updateDto).forEach(key => 
-    updateDto[key] === undefined && delete updateDto[key]
-  );
-
-  mutation.mutate(updateDto);
-};4
-  if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-blue-600" /></div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-20">
+        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-6">
@@ -80,6 +97,27 @@ const onSubmit = (data: any) => {
               {...register("title", { required: true })}
               className="w-full p-4 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+               <label className="block text-sm font-bold text-slate-700 mb-1">Shahar</label>
+               <input 
+                 {...register("city", { required: true })}
+                 className="w-full p-4 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+               />
+            </div>
+            <div>
+               <label className="block text-sm font-bold text-slate-700 mb-1">Bandlik turi</label>
+               <select 
+                  {...register("employmentType")} 
+                  className="w-full p-4 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+               >
+                  <option value="FULL_TIME">To'liq bandlik</option>
+                  <option value="PART_TIME">Yarim kunlik</option>
+                  <option value="REMOTE">Masofaviy</option>
+               </select>
+            </div>
           </div>
 
           <div>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { adminApi } from "../../../features/admin/api/admin.api";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/card";
+import { adminApi } from "../../features/admin/api/admin.api";
+import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
 import { Building2, Briefcase, Users, CheckCircle, Badge } from "lucide-react";
 
 export default function AdminDashboard() {

@@ -1,47 +1,56 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "../../entities/user/model/user-store";
 import { Sidebar } from "./_components/sidebar";
+import { Loader2 } from "lucide-react"; 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuth } = useUserStore();
+  const { user, isAuth, _hasHydrated } = useUserStore();
   const router = useRouter();
 
+  // SIDEBAR HOLATI (Ochiq/Yopiq)
+  const [collapsed, setCollapsed] = useState(false);
+
   useEffect(() => {
-    // Agar login qilmagan bo'lsa, darhol login sahifasiga yuboramiz
-    if (!isAuth) {
-      router.push("/login");
+    if (_hasHydrated) {
+      if (!isAuth) {
+        router.push("/login");
+      }
+      else if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
+        router.push("/");
+      }
     }
-    // Agar login qilgan-u, lekin admin bo'lmasa, bosh sahifaga yuboramiz
-    else if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
-      router.push("/");
-    }
-  }, [user, isAuth, router]);
+  }, [user, isAuth, _hasHydrated, router]);
 
-  // 1. Agar hali auth tekshirilayotgan bo'lsa (loading holati)
-  if (!isAuth) {
-    return <div className="p-20 text-center font-bold">Yuklanmoqda...</div>;
-  }
-
-  // 2. Agar foydalanuvchi admin bo'lmasa, kontentni umuman ko'rsatmaymiz
-  if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
+  if (!_hasHydrated) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center p-10 border rounded-lg shadow-sm">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Kirish taqiqlangan!</h1>
-          <p className="text-slate-500">Sizda ushbu sahifaga kirish huquqi yo'q.</p>
-        </div>
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
       </div>
     );
   }
 
-  // 3. Faqat hamma tekshiruvdan o'tsagina Sidebar va Children ko'rinadi
+  if (!isAuth) return null;
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+    <div className="min-h-screen bg-slate-50 flex">
+      
+      {/* 1. SIDEBAR */}
+      <Sidebar 
+        collapsed={collapsed} 
+        toggleCollapsed={() => setCollapsed(!collapsed)} 
+      />
+
+      {/* 2. MAIN CONTENT (Asosiy qism) */}
+      <main 
+        className={`
+          flex-1 transition-all duration-300 p-6 pt-24 md:pt-6
+          ${collapsed ? "ml-20" : "ml-64"} /* Sidebar kengligiga qarab suriladi */
+        `}
+      >
+        {/* Agar oq header haliyam xalaqit bersa, tepadagi bo'sh joyni (pt-24) olib tashlash mumkin */}
         {children}
       </main>
     </div>

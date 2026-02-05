@@ -13,7 +13,13 @@ export const adminApi = {
     return response.data;
   },
 
-  // Kompaniyani tasdiqlash yoki rad etish
+  // ...
+  createAdmin: async (data: any) => (await $api.post("/admin/create", data)).data,
+
+  getAdmins: async () => (await $api.get("/admin/list")).data,
+
+  deleteAdmin: async (id: string) => (await $api.delete(`/admin/${id}`)).data,
+  
   approveCompany: async (id: string) => {
     return (await $api.patch(`/admin/companies/${id}/approve`)).data;
   },

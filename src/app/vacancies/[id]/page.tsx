@@ -3,33 +3,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { vacancyApi } from "../../../features/vacancy/api/create-vacancy.api";
-import { applicationApi } from "../../../features/application/api/application.api"; // ✅ API IMPORT QILINDI
-import { Loader2, MapPin, Building2, Calendar, DollarSign, ArrowLeft } from "lucide-react";
+import { applicationApi } from "../../../features/application/api/application.api";
+import { Loader2, MapPin, Building2, Calendar, DollarSign, ArrowLeft, AlertCircle, Briefcase } from "lucide-react"; // Iconlar
 import Link from "next/link";
 import { Button } from "../../../shared/ui/button";
 import { Badge } from "../../../shared/ui/badge";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { useUserStore } from "../../../entities/user/model/user-store"; // 👈 STORE CHAQIRILDI
 
 export default function SingleVacancyPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  const [user, setUser] = useState<any>(null);
+  
+  // 1. USERNI STORE ORQALI OLAMIZ (localStorage shart emas)
+  const { user } = useUserStore(); 
+  
   const [isApplying, setIsApplying] = useState(false); 
-
-  // 1. USERNI ANIQLASH
-  useEffect(() => {
-    const storage = localStorage.getItem("user-storage");
-    if (storage) {
-      try {
-        const parsed = JSON.parse(storage);
-        setUser(parsed.state?.user || null);
-      } catch (e) {
-        console.error("User parse error", e);
-      }
-    }
-  }, []);
 
   // 2. VAKANSIYANI OLISH
   const { data, isLoading, error } = useQuery({
@@ -38,50 +29,40 @@ export default function SingleVacancyPage() {
     enabled: !!id,
   });
 
-  // 3. ARIZA TOPSHIRISH LOGIKASI (YANGILANDI 🚀)
+  // 3. ARIZA TOPSHIRISH
   const handleApply = async () => {
-    // A) Agar user kirgan bo'lmasa -> Registerga
+    // A) Mehmon bo'lsa -> Registerga
     if (!user) {
       toast.info("Ariza topshirish uchun avval ro'yxatdan o'ting");
-      router.push("/register");
+      router.push("/login"); // Login yoki Registerga
       return;
     }
 
-    // B) Agar user EMPLOYER bo'lsa -> Mumkin emas
-    if (user.role === 'EMPLOYER') {
-      toast.warning("Ish beruvchilar ariza topshira olmaydi");
+    // B) Ehtiyot shart: Agar baribir admin tugmani bossa (hack qilib)
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'EMPLOYER') {
+      toast.error("Sizning rolizda ariza topshirish mumkin emas");
       return;
     }
 
-    // C) CANDIDATE ARIZA TOPSHIRISHI
-    setIsApplying(true); // Tugmani bloklaymiz
+    setIsApplying(true); 
     try {
-      // API ga so'rov yuboramiz
       await applicationApi.apply({ vacancyId: id });
-      
       toast.success("Ariza muvaffaqiyatli yuborildi! 🎉");
     } catch (err: any) {
-      // Backenddan kelgan xabarni ushlaymiz
       const msg = err.response?.data?.message;
 
       if (msg === "ALREADY_APPLIED") {
         toast.warning("Siz bu ishga allaqachon ariza topshirgansiz! ✅");
       } 
       else if (msg === "PROFILE_INCOMPLETE") {
-        toast.error("Iltimos, avval profilingizni to'ldiring 📝");
-        toast.info("Sizni profil sahifasiga yo'naltirayapmiz...");
-        
-        // 1.5 soniyadan keyin profilga o'tkazvoramiz
-        setTimeout(() => {
-          router.push("/dashboard/profile");
-        }, 1500);
+        toast.error("Iltimos, avval rezyume yarating 📝");
+        setTimeout(() => router.push("/dashboard/profile"), 1500); // Resume sahifasiga
       } 
       else {
-        toast.error("Xatolik yuz berdi. Qayta urinib ko'ring.");
-        console.error(err);
+        toast.error("Xatolik yuz berdi.");
       }
     } finally {
-      setIsApplying(false); // Tugmani blokdan ochamiz
+      setIsApplying(false);
     }
   };
 
@@ -163,7 +144,7 @@ export default function SingleVacancyPage() {
                 </div>
             </div>
 
-            {/* SIDEBAR (Kompaniya & Ariza) */}
+            {/* SIDEBAR (Action) */}
             <div className="space-y-6">
                 
                 {/* Kompaniya Info */}
@@ -172,38 +153,55 @@ export default function SingleVacancyPage() {
                        <Building2 />
                     </div>
                     <h4 className="font-bold text-lg text-slate-900">{v.company?.name}</h4>
-                    <p className="text-slate-500 text-sm mb-6 line-clamp-2">
-                        {v.company?.description || "Kompaniya haqida ma'lumot yo'q"}
-                    </p>
                 </div>
 
-                {/* ⚠️ ACTION BUTTON */}
-                {user?.role !== 'EMPLOYER' && (
-                  <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 sticky top-4">
-                      <Button 
-                        onClick={handleApply}
-                        disabled={isApplying} // Loading paytida bosib bo'lmaydi
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        {isApplying ? (
-                          <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Yuborilmoqda...</>
-                        ) : (
-                          "Ariza topshirish"
-                        )}
-                      </Button>
-                      <p className="text-center text-xs text-slate-400 mt-4">
-                          {!user ? "Ariza topshirish uchun ro'yxatdan o'tish talab etiladi" : "Sizning rezyumeyingiz yuboriladi"}
-                      </p>
-                  </div>
-                )}
-                
-                {user?.role === 'EMPLOYER' && (
-                   <div className="bg-blue-50 rounded-[2rem] p-6 border border-blue-100 text-center">
-                      <p className="text-blue-700 font-bold text-sm">
-                        Bu ish beruvchi ko'rinishi. Siz ariza topshira olmaysiz.
-                      </p>
-                   </div>
-                )}
+                {/* 🔥 DINAMIK TUGMA QISMI 🔥 */}
+                <div className="sticky top-4">
+                    
+                    {/* 1. ADMINLAR UCHUN */}
+                    {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? (
+                       <div className="bg-red-50 rounded-[2rem] p-6 border border-red-100 text-center space-y-2">
+                          <AlertCircle className="mx-auto text-red-500 w-10 h-10 mb-2" />
+                          <h4 className="text-red-700 font-bold">Admin rejimi</h4>
+                          <p className="text-red-500 text-sm">
+                             Siz admin bo'lganingiz uchun ariza topshira olmaysiz.
+                          </p>
+                       </div>
+                    ) 
+                    
+                    /* 2. ISH BERUVCHILAR UCHUN */
+                    : user?.role === 'EMPLOYER' ? (
+                       <div className="bg-blue-50 rounded-[2rem] p-6 border border-blue-100 text-center space-y-2">
+                          <Briefcase className="mx-auto text-blue-500 w-10 h-10 mb-2" />
+                          <h4 className="text-blue-700 font-bold">Ish beruvchi</h4>
+                          <p className="text-blue-500 text-sm">
+                             Sizning hisobingiz vakansiya joylash uchun mo'ljallangan.
+                          </p>
+                       </div>
+                    )
+
+                    : (
+                      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                          <Button 
+                            onClick={handleApply}
+                            disabled={isApplying}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white h-14 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                          >
+                            {isApplying ? (
+                              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Yuborilmoqda...</>
+                            ) : (
+                              "Ariza topshirish"
+                            )}
+                          </Button>
+                          <p className="text-center text-xs text-slate-400 mt-4">
+                              {!user 
+                                ? "Ariza topshirish uchun tizimga kiring" 
+                                : "Sizning rezyumeyingiz avtomatik yuboriladi"}
+                          </p>
+                      </div>
+                    )}
+
+                </div>
 
             </div>
         </div>
