@@ -35,7 +35,7 @@ export function Sidebar({ collapsed, toggleCollapsed }: SidebarProps) {
         
         {!collapsed && (
           <div className="animate-in fade-in duration-300 overflow-hidden whitespace-nowrap">
-            <h1 className="text-xl font-black tracking-tighter">UZ<span className="text-orange-300">.</span>JOB <span className="text-blue-500">A</span></h1>
+            <h1 className="text-xl font-black tracking-tighter">TechJobs <span className="text-blue-500">A</span></h1>
             <p className="text-[15px] text-slate-400 uppercase font-bold tracking-wider">{user?.role}</p>
           </div>
         )}

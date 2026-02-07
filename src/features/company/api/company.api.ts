@@ -1,15 +1,31 @@
 import { $api } from "../../../shared/api/axios-instance";
 
-
 export const companyApi = {
-  // Kompaniya yaratish (POST /companies/me)
+  // 1. Kompaniya yaratish (Sizda: POST /companies/me)
   createMyCompany: async (data: any) => {
-    const response = await $api.post('/companies/me', data);
-    return response.data;
+    return (await $api.post("/companies/me", data)).data;
   },
-  // O'z kompaniyasini olish (GET /companies/me)
+
+  // 2. Mening kompaniyamni olish (Sizda: GET /companies/me)
   getMyCompany: async () => {
-    const response = await $api.get('/companies/me');
-    return response.data;
-  }
+    return (await $api.get("/companies/me")).data;
+  },
+
+  // 3. O'zgartirish (Sizda: PATCH /companies/me)
+  updateMyCompany: async (data: any) => {
+    return (await $api.patch("/companies/me", data)).data;
+  },
+
+  // 4. Logo yuklash (Sizda: PATCH /companies/me/logo)
+  // Eslatma: Bu yerda 'file' FormData ichida ketishi kerak
+  uploadLogo: async (formData: FormData) => {
+    return (await $api.patch("/companies/me/logo", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })).data;
+  },
+
+  // 5. Ommaviy ko'rish (Sizda: GET /companies/:id/public)
+  getOnePublic: async (id: string) => {
+    return (await $api.get(`/companies/${id}/public`)).data;
+  },
 };

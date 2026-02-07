@@ -54,7 +54,7 @@ export const LoginForm = () => {
           Tizimga kirish
         </CardTitle>
         <p className="text-sm text-slate-300">
-          Hisobingizga kirish uchun ma'lumotlarni kiriting
+          Sahifangizga kirish uchun ma'lumotlarni kiriting
         </p>
       </CardHeader>
       
@@ -76,7 +76,6 @@ export const LoginForm = () => {
           <div className="space-y-2">
              <div className="flex justify-between">
                 <label className="text-sm font-medium text-slate-200 ml-1">Parol</label>
-                <Link href="/forgot-password" className="text-sm text-blue-300 hover:text-blue-200 text-xs">Unutdingizmi?</Link>
              </div>
             <Input 
               type="password" 
@@ -86,11 +85,12 @@ export const LoginForm = () => {
               placeholder="******"
               className="bg-white/5 border-white/10 text-white placeholder:text-slate-400 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 h-12 text-lg tracking-widest"
             />
+                <Link href="/forgot-password" className="text-sm text-blue-300 hover:text-blue-200">Unutdingizmi?</Link>
           </div>
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 border-0 mt-4 transition-all active:scale-[0.98]" 
+            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 shadow-lg shadow-green-500/30 border-0 mt-4 transition-all active:scale-[0.98]" 
             disabled={loading}
           >
             {loading ? (
@@ -102,7 +102,7 @@ export const LoginForm = () => {
         </form>
 
         <div className="mt-8 text-center text-sm text-slate-300">
-          Hisobingiz yo'qmi? <Link href="/register" className="text-blue-300 font-bold hover:text-blue-200 transition-colors underline-offset-4 hover:underline">Ro'yxatdan o'tish</Link>
+          Sahifangiz yo'qmi? <Link href="/register" className="text-blue-300 font-bold hover:text-blue-200 transition-colors underline-offset-4 hover:underline">Ro'yxatdan o'tish</Link>
         </div>
       </CardContent>
     </Card>

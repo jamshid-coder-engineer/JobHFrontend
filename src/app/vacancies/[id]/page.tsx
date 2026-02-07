@@ -2,210 +2,188 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { vacancyApi } from "../../../features/vacancy/api/create-vacancy.api";
+import { vacancyApi } from "../../../features/vacancy/api/create-vacancy.api"; 
 import { applicationApi } from "../../../features/application/api/application.api";
-import { Loader2, MapPin, Building2, Calendar, DollarSign, ArrowLeft, AlertCircle, Briefcase } from "lucide-react"; // Iconlar
-import Link from "next/link";
+import { useUserStore } from "../../../entities/user/model/user-store";
+import { 
+  Loader2, MapPin, DollarSign, Briefcase, Calendar, 
+  Building2, ArrowLeft, Share2, Flag, CheckCircle 
+} from "lucide-react";
 import { Button } from "../../../shared/ui/button";
 import { Badge } from "../../../shared/ui/badge";
-import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { useUserStore } from "../../../entities/user/model/user-store"; // 👈 STORE CHAQIRILDI
+import { useState } from "react";
+
+// 👇 1. RASMLAR MANZILI (Backend Porti 2026, Papka images/)
+const BASE_URL = "http://localhost:2026/uploads/images/";
 
 export default function SingleVacancyPage() {
-  const params = useParams();
+  const { id } = useParams();
   const router = useRouter();
-  const id = params?.id as string;
-  
-  // 1. USERNI STORE ORQALI OLAMIZ (localStorage shart emas)
-  const { user } = useUserStore(); 
-  
-  const [isApplying, setIsApplying] = useState(false); 
+  const { user, isAuth } = useUserStore();
+  const [applying, setApplying] = useState(false);
 
-  // 2. VAKANSIYANI OLISH
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["vacancy", id],
-    queryFn: () => vacancyApi.getOne(id),
+    queryFn: () => vacancyApi.getOne(id as string),
     enabled: !!id,
   });
 
-  // 3. ARIZA TOPSHIRISH
+  const vacancy = data?.data || data;
+
+  // 👇 2. YANGILANGAN ARIZA TOPSHIRISH FUNKSIYASI
   const handleApply = async () => {
-    // A) Mehmon bo'lsa -> Registerga
-    if (!user) {
-      toast.info("Ariza topshirish uchun avval ro'yxatdan o'ting");
-      router.push("/login"); // Login yoki Registerga
-      return;
+    // A) Login qilmagan bo'lsa
+    if (!isAuth) {
+      toast.info("Ariza topshirish uchun tizimga kiring");
+      return router.push("/login");
     }
 
-    // B) Ehtiyot shart: Agar baribir admin tugmani bossa (hack qilib)
-    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'EMPLOYER') {
-      toast.error("Sizning rolizda ariza topshirish mumkin emas");
-      return;
+    // B) Rol tekshiruvi (Faqat Candidate)
+    if (user?.role !== "CANDIDATE") {
+      return toast.error("Faqat nomzodlar ariza topshira oladi 🚫");
     }
 
-    setIsApplying(true); 
+    setApplying(true);
     try {
-      await applicationApi.apply({ vacancyId: id });
+      await applicationApi.apply({ vacancyId: id as string });
       toast.success("Ariza muvaffaqiyatli yuborildi! 🎉");
     } catch (err: any) {
+      // C) XATOLARNI TUTIB OLISH VA YO'NALTIRISH
       const msg = err.response?.data?.message;
 
-      if (msg === "ALREADY_APPLIED") {
-        toast.warning("Siz bu ishga allaqachon ariza topshirgansiz! ✅");
-      } 
-      else if (msg === "PROFILE_INCOMPLETE") {
+      if (msg === "PROFILE_INCOMPLETE") {
         toast.error("Iltimos, avval rezyume yarating 📝");
-        setTimeout(() => router.push("/dashboard/profile"), 1500); // Resume sahifasiga
-      } 
-      else {
-        toast.error("Xatolik yuz berdi.");
+        // Rezyume yaratish sahifasiga yo'naltirish (1.5 soniyadan keyin)
+        setTimeout(() => router.push("/dashboard/profile"), 1500);
+      } else if (msg === "ALREADY_APPLIED") {
+        toast.warning("Siz allaqachon bu ishga topshirgansiz ✅");
+      } else {
+        toast.error(msg || "Xatolik yuz berdi");
       }
     } finally {
-      setIsApplying(false);
+      setApplying(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-        <h2 className="text-2xl font-bold text-slate-800">Vakansiya topilmadi 😕</h2>
-        <Link href="/">
-          <Button>Bosh sahifaga qaytish</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  const v = data.data || data; 
+  if (isLoading) return <div className="h-screen flex center items-center justify-center"><Loader2 className="animate-spin text-blue-600 w-10 h-10"/></div>;
+  if (!vacancy) return <div className="text-center py-20">Vakansiya topilmadi</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         
-        {/* Back Button */}
-        <button onClick={() => router.back()} className="inline-flex items-center text-slate-500 hover:text-blue-600 mb-6 font-medium transition-colors cursor-pointer">
-          <ArrowLeft size={18} className="mr-2"/> Ortga qaytish
-        </button>
-
-        {/* HEADER */}
-        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100 mb-6 relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
-           
-           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-              <div className="space-y-4">
-                 <div className="flex items-center gap-3">
-                    <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1 text-sm">
-                        {v.employmentType === 'FULL_TIME' ? "To'liq bandlik" : v.employmentType}
-                    </Badge>
-                    <span className="text-slate-400 text-sm flex items-center gap-1">
-                        <Calendar size={14}/> {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Sana yo\'q'}
-                    </span>
-                 </div>
-                 
-                 <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">
-                    {v.title}
-                 </h1>
-
-                 <div className="flex flex-wrap gap-4 md:gap-8 text-slate-600 font-medium text-lg">
-                    <span className="flex items-center gap-2">
-                        <DollarSign className="text-green-600" size={20}/> 
-                        {v.salaryFrom} - {v.salaryTo}
-                    </span>
-                    <span className="flex items-center gap-2">
-                        <MapPin className="text-red-500" size={20}/> 
-                        {v.city}
-                    </span>
-                 </div>
-              </div>
-
-              {/* Company Logo */}
-              <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl font-bold text-slate-400 uppercase">
-                  {v.company?.name?.[0] || "C"}
-              </div>
+        {/* Header Navigation */}
+        <div className="flex justify-between items-center mb-6">
+           <Button variant="ghost" onClick={() => router.back()} className="hover:bg-slate-200">
+             <ArrowLeft size={18} className="mr-2"/> Orqaga
+           </Button>
+           <div className="flex gap-2">
+             <Button variant="outline" size="icon"><Share2 size={18}/></Button>
+             <Button variant="outline" size="icon"><Flag size={18}/></Button>
            </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* TAVSIF QISMI */}
-            <div className="md:col-span-2 bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100">
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Vakansiya haqida</h3>
-                <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap">
-                    {v.description}
-                </div>
-            </div>
-
-            {/* SIDEBAR (Action) */}
-            <div className="space-y-6">
-                
-                {/* Kompaniya Info */}
-                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 text-center">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4 uppercase">
-                       <Building2 />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           
+           {/* 👈 CHAP TOMON (ASOSIY MA'LUMOT) */}
+           <div className="lg:col-span-2 space-y-6">
+              
+              {/* Katta Karta */}
+              <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
+                 
+                 <div className="flex items-start justify-between mb-4">
+                    <div className="flex gap-3">
+                       {vacancy.employmentType && <Badge variant="secondary">{vacancy.employmentType}</Badge>}
+                       <Badge variant="outline" className="text-slate-500 flex gap-1"><Calendar size={12}/> {new Date(vacancy.createdAt).toLocaleDateString()}</Badge>
                     </div>
-                    <h4 className="font-bold text-lg text-slate-900">{v.company?.name}</h4>
-                </div>
+                    {/* Orqa fon bezagi */}
+                    <div className="text-9xl font-black text-slate-50 absolute -right-4 -top-4 select-none -z-0">
+                       {vacancy.title?.[0]}
+                    </div>
+                 </div>
 
-                {/* 🔥 DINAMIK TUGMA QISMI 🔥 */}
-                <div className="sticky top-4">
-                    
-                    {/* 1. ADMINLAR UCHUN */}
-                    {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? (
-                       <div className="bg-red-50 rounded-[2rem] p-6 border border-red-100 text-center space-y-2">
-                          <AlertCircle className="mx-auto text-red-500 w-10 h-10 mb-2" />
-                          <h4 className="text-red-700 font-bold">Admin rejimi</h4>
-                          <p className="text-red-500 text-sm">
-                             Siz admin bo'lganingiz uchun ariza topshira olmaysiz.
-                          </p>
-                       </div>
-                    ) 
-                    
-                    /* 2. ISH BERUVCHILAR UCHUN */
-                    : user?.role === 'EMPLOYER' ? (
-                       <div className="bg-blue-50 rounded-[2rem] p-6 border border-blue-100 text-center space-y-2">
-                          <Briefcase className="mx-auto text-blue-500 w-10 h-10 mb-2" />
-                          <h4 className="text-blue-700 font-bold">Ish beruvchi</h4>
-                          <p className="text-blue-500 text-sm">
-                             Sizning hisobingiz vakansiya joylash uchun mo'ljallangan.
-                          </p>
-                       </div>
-                    )
+                 <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 relative z-10">{vacancy.title}</h1>
 
-                    : (
-                      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                          <Button 
-                            onClick={handleApply}
-                            disabled={isApplying}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white h-14 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-                          >
-                            {isApplying ? (
-                              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Yuborilmoqda...</>
-                            ) : (
-                              "Ariza topshirish"
-                            )}
-                          </Button>
-                          <p className="text-center text-xs text-slate-400 mt-4">
-                              {!user 
-                                ? "Ariza topshirish uchun tizimga kiring" 
-                                : "Sizning rezyumeyingiz avtomatik yuboriladi"}
-                          </p>
-                      </div>
+                 <div className="flex flex-wrap gap-4 mb-8 relative z-10">
+                    <div className="bg-green-50 px-4 py-2 rounded-xl flex items-center gap-2 text-green-700 font-bold border border-green-100">
+                       <DollarSign size={20}/> 
+                       {vacancy.salaryFrom ? `$${vacancy.salaryFrom} - ${vacancy.salaryTo || '...'}` : "Kelishilgan"}
+                    </div>
+                    <div className="bg-slate-50 px-4 py-2 rounded-xl flex items-center gap-2 text-slate-600 font-bold border border-slate-100">
+                       <MapPin size={20} className="text-red-500"/> {vacancy.city}
+                    </div>
+                 </div>
+              </div>
+
+              {/* Tavsif */}
+              <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                 <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <Briefcase className="text-blue-600"/> Vakansiya haqida
+                 </h3>
+                 <div className="prose prose-slate max-w-none text-slate-600 font-medium whitespace-pre-line">
+                    {vacancy.description}
+                 </div>
+              </div>
+
+           </div>
+
+           {/* 👉 O'NG TOMON (SIDEBAR) */}
+           <div className="space-y-6">
+              
+              {/* 1. KOMPANIYA KARTASI (LOGO BILAN) */}
+              <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm text-center">
+                 <div className="w-20 h-20 mx-auto bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 shadow-inner overflow-hidden">
+                    
+                    {/* 👇 LOGO LOGIKASI */}
+                    {vacancy.company?.logo ? (
+                      <img 
+                         src={`${BASE_URL}${vacancy.company.logo}`} 
+                         alt={vacancy.company.name}
+                         className="w-full h-full object-cover"
+                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <Building2 className="text-slate-400" size={32}/>
                     )}
 
-                </div>
+                 </div>
+                 
+                 <h3 className="text-xl font-black text-slate-800 mb-1">{vacancy.company?.name}</h3>
+                 <p className="text-xs text-slate-500 font-bold mb-6">Rasmiy ish beruvchi</p>
 
-            </div>
+                 <Link href={`/companies/${vacancy.company?.id}`} className="block">
+                    <Button variant="outline" className="w-full rounded-xl">Kompaniya profili</Button>
+                 </Link>
+              </div>
+
+              {/* 2. ARIZA TOPSHIRISH KARTASI */}
+              <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm sticky top-6">
+                 <h3 className="font-bold text-slate-800 mb-4">Qiziqdingizmi?</h3>
+                 <Button 
+                   onClick={handleApply} 
+                   disabled={applying}
+                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
+                 >
+                   {applying ? <Loader2 className="animate-spin mr-2"/> : "Ariza topshirish"}
+                 </Button>
+                 
+                 <p className="text-xs text-center text-green-600 font-bold mt-3 flex items-center justify-center gap-1">
+                    <CheckCircle size={12}/> Rezyume avtomatik yuboriladi
+                 </p>
+                 
+                 {/* Qo'shimcha eslatma */}
+                 {!isAuth && (
+                   <p className="text-[10px] text-center text-slate-400 mt-2">
+                     Topshirish uchun tizimga kiring
+                   </p>
+                 )}
+              </div>
+
+           </div>
         </div>
-
       </div>
     </div>
   );

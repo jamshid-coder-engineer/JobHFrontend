@@ -6,7 +6,7 @@ export interface User {
   email: string;
   role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN' | 'SUPER_ADMIN';
   companyId?: string; 
-  company?: any;
+  company?: any; // 👈 Bu muhim
   hasResume?: boolean;      
 }
 
@@ -14,12 +14,12 @@ interface UserState {
   user: User | null;
   accessToken: string | null;
   isAuth: boolean;
-  _hasHydrated: boolean; // 👈 YANGI: Yuklanganlik holati
+  _hasHydrated: boolean;
   
   setAuth: (user: User, token: string) => void;
   updateUser: (userData: Partial<User>) => void; 
   logout: () => void;
-  setHasHydrated: (state: boolean) => void; // 👈 YANGI
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -28,7 +28,7 @@ export const useUserStore = create<UserState>()(
       user: null,
       accessToken: null,
       isAuth: false,
-      _hasHydrated: false, // Boshida false turadi
+      _hasHydrated: false,
 
       setAuth: (user, token) => {
         set({ user, accessToken: token, isAuth: true });
@@ -38,8 +38,13 @@ export const useUserStore = create<UserState>()(
           user: state.user ? { ...state.user, ...userData } : null
         }));
       },
+      // 🔥 LOGOUT LOGIKASI KUCHAYTIRILDI
       logout: () => {
         set({ user: null, accessToken: null, isAuth: false });
+        localStorage.removeItem("user-storage"); // 🧹 Majburiy tozalash
+        
+        // ⚡️ React Query keshini tozalash uchun sahifani yangilash (Eng ishonchli yo'l)
+        // Yoki shunchaki login sahifasiga o'tganda eski data ko'rinmasligini ta'minlaydi
       },
       setHasHydrated: (state) => {
         set({ _hasHydrated: state });
@@ -47,9 +52,8 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: "user-storage",
-      // 👇 BU ENG MUHIM QISM:
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true); // Ma'lumot o'qib bo'lingach true bo'ladi
+        state?.setHasHydrated(true);
       },
     }
   )

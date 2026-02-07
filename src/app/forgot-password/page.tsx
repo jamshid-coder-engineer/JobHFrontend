@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { $api } from "../../shared/api/axios-instance"; // Yo'lni to'g'irlang
+import { $api } from "../../shared/api/axios-instance"; 
 import { Button } from "../../shared/ui/button";
 import { Input } from "../../shared/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../../shared/ui/card";
@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await $api.post("/auth/forgot-password", { email });
-      setSent(true); // Muvaffaqiyatli yuborildi oynasiga o'tamiz
+      setSent(true); 
     } catch (error: any) {
       alert("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
     } finally {

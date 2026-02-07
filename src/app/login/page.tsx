@@ -10,7 +10,7 @@ export default function LoginPage() {
       <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="inline-flex items-center gap-2 text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-white drop-shadow-lg">
           <Briefcase className="w-10 h-10 text-blue-300" strokeWidth={2.5} />
-          <span>UZ.JOB</span>
+          <span>TechJobs</span>
         </div>
         <p className="text-blue-200 mt-2 text-sm font-medium tracking-wider uppercase opacity-80">
           Karyerangiz shu yerdan boshlanadi

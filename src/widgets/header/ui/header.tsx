@@ -1,34 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 👈 1. Router import qilindi
+import { useRouter } from "next/navigation";
 import { useUserStore } from "../../../entities/user/model/user-store"; 
 import { Button } from "../../../shared/ui/button";
-import { LogOut, PlusCircle, User, Briefcase, LayoutDashboard } from "lucide-react";
+import { LogOut, PlusCircle, User, Briefcase, LayoutDashboard, Heart } from "lucide-react";
 
 export const Header = () => {
   const { isAuth, user, logout } = useUserStore();
-  const router = useRouter(); // 👈 2. Router chaqirildi
+  const router = useRouter();
 
-  // Rolga qarab link berish
   const getProfileLink = () => {
     switch (user?.role) {
-      case "EMPLOYER":
-        return "/dashboard/vacancies"; 
-      case "ADMIN":
-      case "SUPER_ADMIN":
-        return "/admin";     
-      default:
-        return "/dashboard/profile";   
+      case "EMPLOYER": return "/dashboard/vacancies"; 
+      case "ADMIN": case "SUPER_ADMIN": return "/admin";     
+      default: return "/dashboard/profile";   
     }
   };
 
-  // 🛠 3. YANGI LOGOUT FUNKSIYASI
   const handleLogout = () => {
-    logout(); // 1. Tizimdan chiqaramiz (State tozalanadi)
-    router.push("/login"); // 2. Login sahifasiga haydaymiz
-    // Agar Bosh sahifaga otmoqchi bo'lsangiz: router.push("/"); qiling
+    logout();
+    // 🧹 Kesh tozalanishi uchun oynani to'liq yangilab yuboramiz (Login sahifasiga)
+    window.location.href = "/login"; 
   };
+
+  // 🔥 AQLLI LINK LOGIKASI
+  // Agar userda 'company' bo'lmasa -> Kompaniya yaratishga jo'natamiz
+  const createVacancyLink = user?.company 
+      ? "/dashboard/vacancies/create" 
+      : "/dashboard/company/create";
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-100">
@@ -36,70 +36,62 @@ export const Header = () => {
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+          <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
             <Briefcase className="text-white" size={24} />
           </div>
-          <span className="text-4xl font-black tracking-tighter text-gray-600 uppercase">
-            Uz<span className="text-cyan-500">.job</span>
+          <span className="text-2xl md:text-3xl font-black tracking-tighter italic text-slate-700 uppercase">
+            Tech<span className="text-blue-600">Jobs</span>
           </span>
         </Link>
 
-        {/* NAVIGATION */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-xl font-bold text-slate-600 hover:text-blue-600 transition-colors">
-            Vakansiyalar
-          </Link>
-        </nav>
-
         {/* ACTIONS */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-4">
           {isAuth ? (
             <>
-              {/* ISH BERUVCHI */}
+              {/* 🔥 YANGILANGAN TUGMA */}
               {user?.role === "EMPLOYER" && (
-                <Link href="/dashboard/vacancies/create">
+                <Link href={createVacancyLink}>
                   <Button className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold text-white shadow-md shadow-blue-100">
-                    <PlusCircle size={18} />
-                    E'lon berish
+                    <PlusCircle size={18} /> E'lon berish
                   </Button>
                 </Link>
               )}
 
-              {/* NOMZOD */}
+              {/* CANDIDATE */}
               {user?.role === "CANDIDATE" && (
-                <Link href="/dashboard/my-applications" className="hidden md:block text-sm font-bold text-slate-600 mr-2 hover:text-blue-600">
-                  Arizalarim
-                </Link>
+                <>
+                   <Link href="/dashboard/saved-jobs">
+                      <Button variant="ghost" size="icon" className="rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors relative">
+                        <Heart size={22} />
+                      </Button>
+                   </Link>
+                   
+                   <Link href="/dashboard/my-applications" className="hidden md:block text-sm font-bold text-slate-600 hover:text-blue-600">
+                     Arizalarim
+                   </Link>
+                </>
               )}
 
-              {/* ICONS */}
-              <div className="flex items-center gap-2 border-l pl-4 ml-2 border-slate-200">
-                
+              {/* PROFILE & LOGOUT */}
+              <div className="flex items-center gap-1 border-l pl-2 ml-2 border-slate-200">
                 <Link href={getProfileLink()}>
-                  <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                  <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600">
                     {user?.role === 'EMPLOYER' ? <LayoutDashboard size={20} /> : <User size={20} />}
                   </Button>
                 </Link>
 
-                {/* 🔴 O'ZGARTIRILDI: onClick ga handleLogout ulandi */}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-full text-rose-500 hover:bg-rose-50 hover:text-rose-600"
-                  onClick={handleLogout} 
-                >
+                <Button variant="ghost" size="icon" className="rounded-full text-rose-500 hover:bg-rose-50 hover:text-rose-600" onClick={handleLogout}>
                   <LogOut size={20} />
                 </Button>
               </div>
             </>
           ) : (
-            /* MEHMON */
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost" className="font-bold text-xl text-slate-700">Kirish</Button>
+                <Button variant="ghost" className="font-bold text-slate-700">Kirish</Button>
               </Link>
               <Link href="/register">
-                <Button className="bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl px-6 shadow-lg shadow-slate-200">
+                <Button className="bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl px-6 shadow-lg">
                   Ro'yxatdan o'tish
                 </Button>
               </Link>

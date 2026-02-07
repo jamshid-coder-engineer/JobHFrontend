@@ -29,11 +29,12 @@ export default function CreateVacancyPage() {
     }
   });
 
-  // 2. KOMPANIYA BORLIGINI TEKSHIRISH
-  const { data: companyData, isLoading: isCompanyLoading } = useQuery({
+ 
+const { data: companyData, isLoading: isCompanyLoading } = useQuery({
     queryKey: ["my-company"],
     queryFn: () => companyApi.getMyCompany(),
     retry: 1,
+    refetchOnMount: true, // 👈 YANGI: Sahifaga kirganda har doim yangilab oladi (eski kesh qolmaydi)
   });
 
   const myCompany = Array.isArray(companyData?.data) ? companyData.data[0] : companyData?.data;
