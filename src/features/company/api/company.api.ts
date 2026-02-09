@@ -16,16 +16,22 @@ export const companyApi = {
     return (await $api.patch("/companies/me", data)).data;
   },
 
-  // 4. Logo yuklash (Sizda: PATCH /companies/me/logo)
-  // Eslatma: Bu yerda 'file' FormData ichida ketishi kerak
-  uploadLogo: async (formData: FormData) => {
-    return (await $api.patch("/companies/me/logo", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })).data;
+  uploadLogo: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file); // Backendda @UploadedFile() nima nom bilan kutayotganiga qarang ('file' yoki 'logo')
+    return await $api.post("/companies/upload-logo", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+    })
   },
 
   // 5. Ommaviy ko'rish (Sizda: GET /companies/:id/public)
   getOnePublic: async (id: string) => {
     return (await $api.get(`/companies/${id}/public`)).data;
   },
+
+createByInn: async (inn: string) => {
+    // Backenddagi: @Post('create-by-inn') ga yuboramiz
+    return await $api.post("/companies/create-by-inn", { inn });
+  },
+
 };

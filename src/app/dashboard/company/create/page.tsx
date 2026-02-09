@@ -1,181 +1,198 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Globe, MapPin, Camera, Upload } from "lucide-react";
-import Link from "next/link";
+import { Loader2, Search, Building2, AlertCircle, UploadCloud, Image as ImageIcon, ArrowRight, X } from "lucide-react";
 
-// API
-import { companyApi } from "../../../../features/company/api/company.api"; 
+// API & UI
+import { companyApi } from "../../../../features/company/api/company.api";
 import { Button } from "../../../../shared/ui/button";
 import { Input } from "../../../../shared/ui/input";
 
 export default function CreateCompanyPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors } } = useForm();
   
-  // Rasm uchun state
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // 🔥 STATE: Bosqichlarni boshqarish ('inn' yoki 'logo')
+  const [step, setStep] = useState<'inn' | 'logo'>('inn');
+  
+  // INN uchun state
+  const [inn, setInn] = useState("");
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setLogoPreview(URL.createObjectURL(file));
-    }
-  };
+  // Logo uchun state
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // 🔥 2-BOSQICH: LOGO YUKLASH MUTATSIYASI
-  const uploadLogoMutation = useMutation({
-    mutationFn: (file: File) => {
-      const formData = new FormData();
-      // Backenddagi Controller FileInterceptor('file') deb kutyapti
-      formData.append('file', file); 
-      return companyApi.uploadLogo(formData);
-    },
-    onSuccess: () => {
-      // Ikkala ish ham bitdi!
+  // 1️⃣ INN ORQALI YARATISH
+  const createByInnMutation = useMutation({
+    mutationFn: (innValue: string) => companyApi.createByInn(innValue),
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["my-company"] });
-      toast.success("Kompaniya va logotip muvaffaqiyatli yaratildi! 🎉");
-      router.push("/dashboard/vacancies/create");
-    },
-    onError: () => {
-      // Kompaniya yaratildi, lekin logo o'xshamadi
-      toast.warning("Kompaniya yaratildi, lekin logotipni yuklashda xatolik bo'ldi.");
-      router.push("/dashboard/vacancies/create");
-    }
-  });
-
-  // 1-BOSQICH: KOMPANIYA MA'LUMOTLARINI YARATISH
-  const createMutation = useMutation({
-    mutationFn: (data: any) => companyApi.createMyCompany(data),
-    onSuccess: () => {
-      // ✅ Kompaniya yaratildi. Endi rasm bormi tekshiramiz.
-      if (selectedFile) {
-        // Rasm bor ekan -> 2-bosqichni boshlaymiz
-        uploadLogoMutation.mutate(selectedFile);
-      } else {
-        // Rasm yo'q ekan -> Tugatamiz
-        queryClient.invalidateQueries({ queryKey: ["my-company"] });
-        toast.success("Kompaniya muvaffaqiyatli yaratildi! 🎉");
-        router.push("/dashboard/vacancies/create");
-      }
+      const companyName = res.data?.data?.name || "Kompaniya";
+      toast.success(`${companyName} muvaffaqiyatli ro'yxatdan o'tdi! 🎉`);
+      
+      // 🚀 DARHOL KEYINGI BOSQICHGA O'TAMIZ (Redirect qilmaymiz)
+      setStep('logo');
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Xatolik yuz berdi");
+      const msg = err.response?.data?.message || "Xatolik yuz berdi";
+      toast.error(msg);
     }
   });
 
-  const onSubmit = (data: any) => {
-    // Faqat ma'lumotlarni yuboramiz (1-bosqich)
-    createMutation.mutate(data);
+  // 2️⃣ LOGO YUKLASH MUTATSIYASI
+  const uploadLogoMutation = useMutation({
+    mutationFn: (file: File) => companyApi.uploadLogo(file), // API da bu metod bo'lishi kerak
+    onSuccess: () => {
+      toast.success("Logo muvaffaqiyatli yuklandi! 🎨");
+      finishProcess();
+    },
+    onError: (err: any) => {
+      toast.error("Logo yuklashda xatolik bo'ldi, lekin kompaniya yaratilgan.");
+      finishProcess(); // Xato bo'lsa ham o'tkazib yuboramiz (skip)
+    }
+  });
+
+  // 🏁 JARAYONNI TUGATISH
+  const finishProcess = () => {
+    queryClient.invalidateQueries({ queryKey: ["my-company"] });
+    router.push("/dashboard/vacancies/create");
   };
 
-  // Ikkalasidan biri ishlayotgan bo'lsa ham loading ko'rsatamiz
-  const isLoading = createMutation.isPending || uploadLogoMutation.isPending;
+  const handleInnSubmit = () => {
+    if (inn.length !== 9) {
+      toast.warning("STIR (INN) 9 xonali son bo'lishi kerak!");
+      return;
+    }
+    createByInnMutation.mutate(inn);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 2MB dan katta bo'lmasligi kerak
+      if (file.size > 2 * 1024 * 1024) {
+        toast.warning("Rasm hajmi 2MB dan oshmasligi kerak");
+        return;
+      }
+      setLogoFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleLogoUpload = () => {
+    if (!logoFile) return;
+    uploadLogoMutation.mutate(logoFile);
+  };
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
-      
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/dashboard/vacancies">
-          <Button variant="ghost" size="icon"><ArrowLeft size={20} /></Button>
-        </Link>
-        <div>
-           <h1 className="text-2xl font-black text-slate-800">Kompaniya profilini yaratish</h1>
-           <p className="text-slate-500 font-medium">E'lon berishdan oldin kompaniyangizni taniting</p>
+    <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+      <div className="max-w-xl w-full space-y-8">
+        
+        {/* --- HEADER --- */}
+        <div className="text-center space-y-2">
+           <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              {step === 'inn' ? <Building2 size={32} /> : <ImageIcon size={32} />}
+           </div>
+           <h1 className="text-3xl font-black text-slate-800">
+             {step === 'inn' ? "Kompaniyangizni ro'yxatdan o'tkazing" : "Kompaniya Logotipi"}
+           </h1>
+           <p className="text-slate-500 font-medium">
+             {step === 'inn' 
+               ? "Davlat reyestridagi ma'lumotlarni avtomatik yuklash" 
+               : "Brendingiz tanilishi uchun logotip yuklang"}
+           </p>
         </div>
-      </div>
 
-      <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          
-          {/* LOGO YUKLASH QISMI */}
-          <div className="flex flex-col items-center justify-center mb-6">
-            <div 
-              onClick={() => fileInputRef.current?.click()} 
-              className="relative group cursor-pointer w-28 h-28 rounded-3xl border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 flex items-center justify-center overflow-hidden transition-all"
-            >
-               {logoPreview ? (
-                 <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
-               ) : (
-                 <div className="flex flex-col items-center text-slate-400 group-hover:text-blue-600 transition-colors">
-                    <Camera size={32} className="mb-1" />
-                    <span className="text-[10px] font-bold uppercase">Logo</span>
-                 </div>
-               )}
+        {/* --- 1-BOSQICH: INN --- */}
+        {step === 'inn' && (
+          <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 animate-in fade-in zoom-in duration-300">
+             <label className="text-sm font-bold text-slate-700 mb-2 block">
+                Tashkilot STIR (INN) raqami
+             </label>
+             <div className="flex gap-2 mb-4">
+                <div className="relative flex-1">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20}/>
+                   <Input 
+                     placeholder="Masalan: 300000001" 
+                     value={inn}
+                     onChange={(e) => setInn(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                     className="h-14 pl-12 text-lg font-bold tracking-widest bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-xl"
+                   />
+                </div>
+             </div>
 
-               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Upload className="text-white" size={24} />
-               </div>
-            </div>
+             <Button 
+               onClick={handleInnSubmit} 
+               disabled={createByInnMutation.isPending || inn.length !== 9}
+               className="w-full h-14 text-lg font-bold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200"
+             >
+               {createByInnMutation.isPending ? <Loader2 className="animate-spin mr-2"/> : "Qidirish va Yaratish"}
+             </Button>
+
+             {/* Test Hint */}
+             <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500 space-y-2">
+                <p className="font-bold text-slate-600 flex items-center gap-2"><AlertCircle size={14}/> Test INN:</p>
+                <div className="grid grid-cols-2 gap-2">
+                   <div className="bg-white px-2 py-1 rounded border border-slate-200 font-mono text-blue-600 font-bold">300000001</div>
+                   <div className="bg-white px-2 py-1 rounded border border-slate-200 font-mono text-blue-600 font-bold">300000002</div>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* --- 2-BOSQICH: LOGO --- */}
+        {step === 'logo' && (
+          <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 animate-in slide-in-from-right duration-300">
             
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              hidden 
-              accept="image/*"
-              onChange={handleLogoChange}
-            />
-            
-            <p className="text-xs text-slate-400 mt-2 font-medium">
-              Logotip yuklash uchun bosing (ixtiyoriy)
-            </p>
-          </div>
-
-          {/* INPUTLAR (O'zgarishsiz) */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">Kompaniya nomi *</label>
-            <Input 
-              {...register("name", { required: "Nom kiritilishi shart" })} 
-              placeholder="Masalan: 'Techno Soft' MChJ" 
-              className="h-12 rounded-xl text-lg font-bold"
-            />
-            {errors.name && <span className="text-red-500 text-xs font-bold">{String(errors.name.message)}</span>}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">Kompaniya haqida qisqacha</label>
-            <textarea 
-              {...register("description")} 
-              rows={4}
-              placeholder="Bizning kompaniya 2010-yildan beri..." 
-              className="w-full rounded-xl border border-slate-200 p-4 focus:outline-none focus:ring-2 focus:ring-blue-400 font-medium text-slate-600"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                <Globe size={14} /> Vebsayt (ixtiyoriy)
+            <div className="flex flex-col items-center justify-center w-full mb-6">
+              <label 
+                htmlFor="dropzone-file" 
+                className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-all 
+                  ${previewUrl ? 'border-blue-300 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}`}
+              >
+                {previewUrl ? (
+                  <div className="relative w-full h-full p-4 flex items-center justify-center group">
+                    <img src={previewUrl} alt="Preview" className="max-h-full object-contain rounded-lg shadow-sm" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-opacity">
+                       <p className="text-white font-bold flex items-center gap-2"><UploadCloud/> O'zgartirish</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6 text-slate-500">
+                    <UploadCloud className="w-12 h-12 mb-3 text-slate-400" />
+                    <p className="mb-2 text-sm font-bold">Yuklash uchun bosing</p>
+                    <p className="text-xs">PNG, JPG (MAX. 2MB)</p>
+                  </div>
+                )}
+                <input id="dropzone-file" type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
               </label>
-              <Input {...register("website")} placeholder="https://company.uz" className="h-12 rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                <MapPin size={14} /> Manzil
-              </label>
-              <Input {...register("location")} placeholder="Toshkent sh, Chilonzor..." className="h-12 rounded-xl" />
+
+            <div className="flex gap-3">
+               <Button 
+                 variant="outline"
+                 onClick={finishProcess} 
+                 className="flex-1 h-12 rounded-xl font-bold border-slate-200 hover:bg-slate-50 text-slate-600"
+               >
+                 O'tkazib yuborish
+               </Button>
+               
+               <Button 
+                 onClick={handleLogoUpload} 
+                 disabled={!logoFile || uploadLogoMutation.isPending}
+                 className="flex-[2] h-12 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
+               >
+                 {uploadLogoMutation.isPending ? <Loader2 className="animate-spin mr-2"/> : "Saqlash va Davom etish"}
+                 {!uploadLogoMutation.isPending && <ArrowRight size={18} className="ml-2"/>}
+               </Button>
             </div>
+
           </div>
+        )}
 
-          {/* Submit Tugmasi */}
-          <Button 
-            disabled={isLoading} 
-            type="submit" 
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold h-14 rounded-xl text-lg shadow-lg mt-4"
-          >
-            {isLoading ? <Loader2 className="animate-spin mr-2" /> : "Saqlash va davom etish"}
-          </Button>
-
-        </form>
       </div>
     </div>
   );

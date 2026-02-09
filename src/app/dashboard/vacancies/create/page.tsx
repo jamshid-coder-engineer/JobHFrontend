@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form"; // 👈 Controller qo'shildi
 import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Building2, AlertCircle } from "lucide-react";
@@ -14,27 +14,31 @@ import { PremiumBanner } from "../../../../shared/ui/premium-banner";
 import { Button } from "../../../../shared/ui/button";
 import { Input } from "../../../../shared/ui/input";
 
+// 🔥 BIZ YASAGAN EDITORNI IMPORT QILAMIZ
+import { RichEditor } from "../../../../shared/ui/rich-editor";
+
 export default function CreateVacancyPage() {
   const router = useRouter();
   
   // 1. react-hook-form ni sozlaymiz
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  // control - bu Controller uchun kerak
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
     defaultValues: {
       title: "",
       city: "",
       employmentType: "FULL_TIME",
       salaryFrom: "",
       salaryTo: "",
-      description: ""
+      description: "" // Boshlanishiga bo'sh matn
     }
   });
 
- 
-const { data: companyData, isLoading: isCompanyLoading } = useQuery({
+  // 2. KOMPANIYA MA'LUMOTLARI
+  const { data: companyData, isLoading: isCompanyLoading } = useQuery({
     queryKey: ["my-company"],
     queryFn: () => companyApi.getMyCompany(),
     retry: 1,
-    refetchOnMount: true, // 👈 YANGI: Sahifaga kirganda har doim yangilab oladi (eski kesh qolmaydi)
+    refetchOnMount: true,
   });
 
   const myCompany = Array.isArray(companyData?.data) ? companyData.data[0] : companyData?.data;
@@ -52,19 +56,19 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
   });
 
   const onSubmit = (data: any) => {
+    // Tavsif bo'sh emasligini yana bir bor tekshiramiz (HTML teglaridan tozilab)
+    const cleanText = data.description.replace(/<[^>]+>/g, '');
+    if (cleanText.trim().length < 10) {
+      toast.error("Iltimos, tavsifni batafsilroq yozing!");
+      return;
+    }
+
     const payload = {
       ...data,
       salaryFrom: Number(data.salaryFrom),
       salaryTo: Number(data.salaryTo),
     };
     createMutation.mutate(payload);
-  };
-
-  // --- MINUSNI BLOKLASH FUNKSIYASI ---
-  const blockInvalidChars = (e: any) => {
-    if (["-", "+", "e", "E"].includes(e.key)) {
-      e.preventDefault();
-    }
   };
 
   // --- LOADING ---
@@ -88,7 +92,7 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
           <div>
             <h2 className="text-2xl font-black text-slate-800">Kompaniya mavjud emas!</h2>
             <p className="text-slate-500 mt-2 max-w-md mx-auto">
-              Vakansiya e'lon qilish uchun avval kompaniyangiz (yoki tashkilot) profilini yaratishingiz kerak.
+              Vakansiya e'lon qilish uchun avval kompaniyangiz profilini yaratishingiz kerak.
             </p>
           </div>
           <Link href="/dashboard/company/create">
@@ -108,7 +112,7 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
 
   // --- ✅ FORMA ---
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-8 pb-32"> {/* pb-32 qo'shildi (pastdan joy) */}
       
       <PremiumBanner />
 
@@ -172,31 +176,22 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
           </div>
           
 
-  {/* MAOSH QISMI (YAKUNIY YECHIM 🛠) */}
+          {/* MAOSH QISMI */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Maosh (dan) */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Maosh (dan)</label>
               <div className="relative">
                 <span className="absolute left-3 top-3 text-slate-400">$</span>
                 <Input
-                  type="text" // 👈 DIQQAT: type="number" emas, "text" qilamiz (xavfsizroq)
+                  type="text"
                   placeholder="1000"
                   className="pl-8 h-12 rounded-xl"
-                  inputMode="numeric" // 👈 Telefonda klaviatura raqam bo'lib ochiladi
+                  inputMode="numeric"
                   {...register("salaryFrom", { 
                     required: true, 
                     onChange: (e) => {
-                      // 1. Faqat raqamlarni qoldiramiz (Minus, nuqta, harf - hammasi ketadi)
                       let val = e.target.value.replace(/\D/g, '');
-                      
-                      // 2. Agar 0 bilan boshlansa, uni ham o'chiramiz
-                      if (val.startsWith('0')) {
-                        val = val.replace(/^0+/, '');
-                      }
-                      
-                      // 3. Tozalangan qiymatni qaytarib joylaymiz
+                      if (val.startsWith('0')) val = val.replace(/^0+/, '');
                       e.target.value = val;
                     }
                   })}
@@ -204,13 +199,12 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
               </div>
             </div>
 
-            {/* Maosh (gacha) */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Maosh (gacha)</label>
               <div className="relative">
                 <span className="absolute left-3 top-3 text-slate-400">$</span>
                 <Input
-                  type="text" // 👈 Bu yerda ham "text"
+                  type="text"
                   placeholder="2000"
                   className="pl-8 h-12 rounded-xl"
                   inputMode="numeric"
@@ -227,17 +221,24 @@ const { data: companyData, isLoading: isCompanyLoading } = useQuery({
             </div>
           </div>
 
-
-
-          {/* Tavsif */}
+          {/* 🔥 TAVSIF QISMI (RICH EDITOR BILAN) */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">Batafsil tavsif</label>
-            <textarea 
-              {...register("description", { required: true })} 
-              rows={6}
-              placeholder="Talablar va vazifalar..." 
-              className="w-full rounded-xl border border-slate-200 p-4 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            
+            <Controller
+              name="description"
+              control={control}
+              rules={{ required: "Tavsif yozilishi shart" }}
+              render={({ field }) => (
+                <RichEditor
+                  value={field.value}
+                  onChange={field.onChange} // Matn o'zgarganda formaga yozadi
+                  placeholder="Nomzoddan nimalar talab qilinadi? Batafsil yozing..."
+                />
+              )}
             />
+            
+            {errors.description && <span className="text-red-500 text-xs font-bold">Matn yozilishi shart</span>}
           </div>
 
           <Button 

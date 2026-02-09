@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   MapPin, Loader2, Search, 
-  DollarSign, Briefcase, Filter, Crown, CheckCircle, Building2 
-} from "lucide-react";
+  DollarSign, Briefcase, Filter, Crown 
+} from "lucide-react"; // Building2 olib tashlandi (kerak emas)
 import { toast } from "sonner"; 
 
 // API IMPORTLARI
@@ -18,8 +18,8 @@ import { Button } from "../shared/ui/button";
 import { Badge } from "../shared/ui/badge";
 import { SaveButton } from "../features/vacancy/ui/save-button"; 
 
-// 👇 1. Rasmlar manzili (Backend Porti 2026)
-const BASE_URL = "http://localhost:2026/uploads/images/";
+// 🔥 YANGI LOGO KOMPONENTI (BASE_URL kerak emas endi)
+import { CompanyLogo } from "../shared/ui/company-logo"; 
 
 export default function HomePage() {
   return (
@@ -110,7 +110,7 @@ function HomeContent() {
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       
-      {/* HEADER QISMI */}
+      {/* HEADER QISMI (O'zgarishsiz) */}
       <div className="bg-white border-b border-slate-200 z-20 shadow-sm relative">
         <div className="max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
           <div className="text-center animate-in fade-in slide-in-from-top-2">
@@ -119,7 +119,6 @@ function HomeContent() {
              </h1>
           </div>
           
-          {/* Qidiruv va Filtrlar (O'zgarishsiz) */}
           <div className="flex flex-col md:flex-row gap-0 md:gap-0 shadow-lg shadow-blue-100/50 rounded-2xl overflow-hidden border border-slate-200">
              <div className="relative flex-1 border-b md:border-b-0 md:border-r border-slate-200 bg-white group hover:bg-slate-50 transition-colors">
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600" size={20}/>
@@ -148,29 +147,21 @@ function HomeContent() {
              <div className="flex items-center gap-2 text-slate-500 font-bold mr-2 text-base">
                 <Filter size={20}/> <span className="hidden sm:inline">Saralash:</span>
              </div>
-             <select 
-               className="h-12 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]"
-               value={filters.date} onChange={(e) => updateFilter("date", e.target.value)}
-             >
+             {/* Filtr selectlari o'zgarishsiz qoldirildi */}
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.date} onChange={(e) => updateFilter("date", e.target.value)}>
                <option value="">🗓 Sana: Barchasi</option>
                <option value="1d">So'nggi 24 soat</option>
                <option value="3d">So'nggi 3 kun</option>
                <option value="7d">So'nggi hafta</option>
              </select>
-             <select 
-               className="h-12 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]"
-               value={filters.type} onChange={(e) => updateFilter("type", e.target.value)}
-             >
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.type} onChange={(e) => updateFilter("type", e.target.value)}>
                <option value="">💼 Turi: Barchasi</option>
                <option value="FULL_TIME">To'liq bandlik</option>
                <option value="PART_TIME">Yarim kunlik</option>
                <option value="REMOTE">Masofaviy</option>
                <option value="PROJECT">Loyiha</option>
              </select>
-             <select 
-               className="h-12 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]"
-               value={filters.minSalary} onChange={(e) => updateFilter("minSalary", e.target.value)}
-             >
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.minSalary} onChange={(e) => updateFilter("minSalary", e.target.value)}>
                <option value="">💰 Maosh: Barchasi</option>
                <option value="500">$500 dan yuqori</option>
                <option value="1000">$1,000 dan yuqori</option>
@@ -186,7 +177,7 @@ function HomeContent() {
         <div className="max-w-[1400px] mx-auto h-full flex">
             
             {/* ⬅️ CHAP TOMON: RO'YXAT */}
-            <div className="w-full md:w-[450px] lg:w-[480px] h-full overflow-y-auto border-r border-slate-200 bg-white custom-scrollbar pb-20">
+            <div className="w-full md:w-[450px] rounded-xl lg:w-[480px] h-full overflow-y-auto border-r border-slate-200 bg-white custom-scrollbar pb-20">
                {isLoading && <div className="text-center p-10"><Loader2 className="animate-spin mx-auto text-blue-600"/></div>}
                
                {!isLoading && vacancies.length === 0 && (
@@ -209,21 +200,14 @@ function HomeContent() {
                     </div>
 
                     <div className="flex items-start gap-4 mb-3">
-                       {/* 👇 2. LOGO RO'YXATDA (Chap tomon) */}
-                       <div className="shrink-0">
-                          {v.company?.logo ? (
-                            <img 
-                              src={`${BASE_URL}${v.company.logo}`} 
-                              alt={v.company.name} 
-                              className="w-12 h-12 rounded-lg object-cover border border-slate-100"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
-                               {v.company?.name?.[0]?.toUpperCase() || <Building2 size={20}/>}
-                            </div>
-                          )}
-                       </div>
+                       
+                       {/* 🔥 1. ESKI KOD O'RNIGA YANGI KOMPONENT */}
+                       <CompanyLogo 
+                          logo={v.company?.logo} 
+                          name={v.company?.name} 
+                          size="md" // O'rtacha o'lcham
+                          className="shrink-0"
+                       />
 
                        <div className="flex-1 pr-8">
                           <h3 className={`font-bold text-lg leading-tight group-hover:underline ${selectedId === v.id ? 'md:text-blue-700' : 'text-slate-900'}`}>
@@ -233,10 +217,7 @@ function HomeContent() {
                        </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 mb-2">
-                       {/* Badge qismlari o'zgarishsiz */}
-                    </div>
-
+                    {/* ... Qolgan qismlar ... */}
                     <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
                        <MapPin size={12}/> {v.city}
                     </p>
@@ -269,20 +250,14 @@ function HomeContent() {
                           <SaveButton vacancyId={selectedVacancy.id} initialSaved={selectedVacancy.isSaved} />
                        </div>
 
-                       {/* 👇 3. LOGO BATAFSIL KO'RISHDA (O'ng tomon) */}
                        <div className="flex items-center gap-4 mb-4">
-                          {selectedVacancy.company?.logo ? (
-                            <img 
-                              src={`${BASE_URL}${selectedVacancy.company.logo}`} 
-                              alt={selectedVacancy.company.name} 
-                              className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-sm"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                            />
-                          ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-blue-200 shadow-lg">
-                               {selectedVacancy.company?.name?.[0]?.toUpperCase()}
-                            </div>
-                          )}
+                          
+                          {/* 🔥 2. ESKI KOD O'RNIGA YANGI KOMPONENT */}
+                          <CompanyLogo 
+                             logo={selectedVacancy.company?.logo} 
+                             name={selectedVacancy.company?.name} 
+                             size="lg" // Katta o'lcham
+                          />
                           
                           <div>
                              <h1 className="text-2xl font-black text-slate-900">{selectedVacancy.title}</h1>
@@ -315,7 +290,7 @@ function HomeContent() {
                        )}
                     </div>
                     
-                    {/* Qolgan qismlar o'zgarishsiz... */}
+                    {/* ... Maosh va Tavsif qismi ... */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                           <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1"><DollarSign size={12}/> Maosh</p>
@@ -331,9 +306,11 @@ function HomeContent() {
 
                     <div className="prose prose-slate max-w-none">
                        <h3 className="text-lg font-bold text-slate-900 mb-3">Vakansiya haqida</h3>
-                       <div className="whitespace-pre-line text-slate-600 leading-relaxed text-sm md:text-base font-medium">
-                          {selectedVacancy.description}
-                       </div>
+                       {/* 🔥 HTML formatida o'qish uchun */}
+                       <div 
+                         className="whitespace-pre-line text-slate-600 leading-relaxed text-sm md:text-base font-medium"
+                         dangerouslySetInnerHTML={{ __html: selectedVacancy.description }}
+                       />
                     </div>
                  </div>
                ) : (

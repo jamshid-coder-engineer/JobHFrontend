@@ -1,13 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// 👇 USER INTERFEYSINI KENGAYTIRAMIZ
 export interface User {
   id: string;
   email: string;
   role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN' | 'SUPER_ADMIN';
   companyId?: string; 
-  company?: any; // 👈 Bu muhim
-  hasResume?: boolean;      
+  company?: any;
+  hasResume?: boolean;
+  
+  // 👇 YANGI QO'SHILGAN MAYDONLAR (PROFIL UCHUN):
+  firstName?: string;
+  lastName?: string; // Agar kerak bo'lsa
+  phone?: string;
+  city?: string;
+  jobTitle?: string;
 }
 
 interface UserState {
@@ -33,18 +41,16 @@ export const useUserStore = create<UserState>()(
       setAuth: (user, token) => {
         set({ user, accessToken: token, isAuth: true });
       },
+      // updateuser endi yangi maydonlarni ham qabul qiladi
       updateUser: (userData) => {
         set((state) => ({
           user: state.user ? { ...state.user, ...userData } : null
         }));
       },
-      // 🔥 LOGOUT LOGIKASI KUCHAYTIRILDI
       logout: () => {
         set({ user: null, accessToken: null, isAuth: false });
-        localStorage.removeItem("user-storage"); // 🧹 Majburiy tozalash
-        
-        // ⚡️ React Query keshini tozalash uchun sahifani yangilash (Eng ishonchli yo'l)
-        // Yoki shunchaki login sahifasiga o'tganda eski data ko'rinmasligini ta'minlaydi
+        localStorage.removeItem("user-storage");
+        window.location.href = "/login"; 
       },
       setHasHydrated: (state) => {
         set({ _hasHydrated: state });
