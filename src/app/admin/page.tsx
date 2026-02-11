@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     <div className="p-8 space-y-8">
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
       
-      {/* Statistika kartalari */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {cards.map((card, i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Leaderboard - Top Kompaniyalar */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Eng faol kompaniyalar (Top-5)</CardTitle>

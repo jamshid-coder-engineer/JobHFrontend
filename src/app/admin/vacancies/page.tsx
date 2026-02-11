@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "../../../features/admin/api/admin.api"; 
-import { Loader2, CheckCircle, XCircle, Crown, AlertCircle } from "lucide-react"; // Iconlar
+import { Loader2, CheckCircle, XCircle, Crown, AlertCircle } from "lucide-react"; 
 import { Button } from "../../../shared/ui/button";
 import { Badge } from "../../../shared/ui/badge";
 import { toast } from "sonner";
@@ -67,12 +67,12 @@ export default function AdminVacanciesPage() {
         {vacancies.map((v: any) => (
           <div key={v.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
             
-            {/* Chap tomon: Info */}
+            {}
             <div className="flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                  <h3 className="text-xl font-bold text-slate-900">{v.title}</h3>
                  
-                 {/* STATUS BADGE */}
+                 {}
                  <Badge className={`
                     ${v.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 
                       v.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}
@@ -93,7 +93,7 @@ export default function AdminVacanciesPage() {
                  <span>💰 ${v.salaryFrom} - ${v.salaryTo}</span>
               </p>
               
-              {/* Agar rad etilgan bo'lsa sababini ko'rsatamiz */}
+              {}
               {v.status === 'REJECTED' && v.rejectedReason && (
                  <div className="bg-red-50 p-3 rounded-lg text-sm text-red-600 flex gap-2 items-start">
                     <AlertCircle size={16} className="mt-0.5 shrink-0"/>
@@ -106,13 +106,13 @@ export default function AdminVacanciesPage() {
               </p>
             </div>
 
-            {/* O'ng tomon: Actionlar (Admin Panel) */}
+            {}
             <div className="flex flex-col gap-3 min-w-[320px]">
                
-               {/* 1. APPROVE / REJECT TUGMALARI (LOGIKA O'ZGARDI ⚡️) */}
+               {}
                <div className="flex gap-2">
                   
-                  {/* Tasdiqlash tugmasi: Agar allaqachon PUBLISHED bo'lmasa chiqadi */}
+                  {}
                   {v.status !== 'PUBLISHED' && (
                     <Button 
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm"
@@ -122,18 +122,18 @@ export default function AdminVacanciesPage() {
                     </Button>
                   )}
                   
-                  {/* Rad etish tugmasi: Agar allaqachon REJECTED bo'lmasa chiqadi */}
+                  {}
                   {v.status !== 'REJECTED' && (
                     <Button 
                       className="flex-1 bg-white border border-red-200 text-red-600 hover:bg-red-50 shadow-sm"
-                      onClick={() => setRejectId(v.id === rejectId ? null : v.id)} // Toggle qilish
+                      onClick={() => setRejectId(v.id === rejectId ? null : v.id)} 
                     >
                        <XCircle size={16} className="mr-2"/> Rad etish
                     </Button>
                   )}
                </div>
 
-               {/* RAD ETISH FORM (Faqat tugma bosilganda ochiladi) */}
+               {}
                {rejectId === v.id && (
                   <div className="bg-red-50 p-4 rounded-xl border border-red-100 animate-in fade-in slide-in-from-top-2">
                      <p className="text-xs font-bold text-red-700 mb-2">Rad etish sababini yozing:</p>
@@ -163,7 +163,7 @@ export default function AdminVacanciesPage() {
                   </div>
                )}
 
-               {/* 2. PREMIUM QILISH (Har doim ko'rinadi) */}
+               {}
                <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 mt-auto">
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-xs font-bold text-purple-700 flex items-center gap-1">

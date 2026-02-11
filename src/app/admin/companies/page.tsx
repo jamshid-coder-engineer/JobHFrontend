@@ -9,13 +9,13 @@ import { toast } from "sonner";
 export default function AdminCompaniesPage() {
   const queryClient = useQueryClient();
 
-  // Barcha kompaniyalarni olish (Status filtrini olib tashladik yoki ixtiyoriy qildik)
+  
   const { data, isLoading } = useQuery({
     queryKey: ["admin-companies"],
     queryFn: () => adminApi.getCompanies(), 
   });
 
-  // Tasdiqlash mutatsiyasi
+  
   const approveMutation = useMutation({
     mutationFn: adminApi.approveCompany,
     onSuccess: () => {

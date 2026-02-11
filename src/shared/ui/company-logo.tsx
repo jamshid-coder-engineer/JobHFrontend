@@ -1,23 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Building2 } from "lucide-react";
-import Image from "next/image";
 
-// Backend manzili (Env fayldan olgan ma'qul, hozircha qo'lda yozamiz)
-const API_URL = "http://localhost:3000"; // Portingiz 3000 yoki boshqa bo'lsa o'zgartiring
+
+const API_URL = "http://localhost:2026"; 
 
 interface CompanyLogoProps {
-  logo?: string | null; // Bazadan kelgan fayl nomi
-  name?: string;        // Kompaniya nomi (Fallback uchun)
-  size?: "sm" | "md" | "lg" | "xl"; // O'lchamlar
+  logo?: string | null;
+  name?: string;       
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
 export const CompanyLogo = ({ logo, name = "Company", size = "md", className = "" }: CompanyLogoProps) => {
   const [imageError, setImageError] = useState(false);
 
-  // O'lchamlar logikasi
   const sizeClasses = {
     sm: "w-8 h-8 text-xs",
     md: "w-10 h-10 text-sm",
@@ -25,10 +22,13 @@ export const CompanyLogo = ({ logo, name = "Company", size = "md", className = "
     xl: "w-24 h-24 text-3xl",
   };
 
-  // Agar logo bo'lsa va hali xato bermagan bo'lsa -> Rasmni ko'rsat
+  
   if (logo && !imageError) {
-    // URL yasash: Agar "http" bilan boshlansa o'zi, bo'lmasa biz ulaymiz
-    const fullUrl = logo.startsWith("http") ? logo : `${API_URL}/uploads/${logo}`;
+    
+    
+    const fullUrl = logo.startsWith("http") 
+      ? logo 
+      : `${API_URL}/uploads/images/${logo}`;
 
     return (
       <div className={`relative rounded-full overflow-hidden border border-slate-200 bg-white ${sizeClasses[size]} ${className}`}>
@@ -36,16 +36,14 @@ export const CompanyLogo = ({ logo, name = "Company", size = "md", className = "
           src={fullUrl}
           alt={name}
           className="w-full h-full object-cover"
-          onError={() => setImageError(true)} // Agar rasm topilmasa, harfga o'tadi
+          onError={() => setImageError(true)} 
         />
       </div>
     );
   }
 
-  // Fallback: Agar logo yo'q bo'lsa -> Bosh harf
   const initial = name ? name.charAt(0).toUpperCase() : "?";
   
-  // Har xil ranglar (nomiga qarab)
   const colors = [
     "bg-blue-100 text-blue-600",
     "bg-emerald-100 text-emerald-600",
@@ -54,7 +52,6 @@ export const CompanyLogo = ({ logo, name = "Company", size = "md", className = "
     "bg-rose-100 text-rose-600",
   ];
   
-  // Ism uzunligiga qarab rang tanlash (doim bir xil chiqishi uchun)
   const colorIndex = name.length % colors.length;
   const colorClass = colors[colorIndex];
 
@@ -64,3 +61,4 @@ export const CompanyLogo = ({ logo, name = "Company", size = "md", className = "
     </div>
   );
 };
+

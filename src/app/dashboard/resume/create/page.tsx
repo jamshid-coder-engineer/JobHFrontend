@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { resumeApi } from "../../../../features/resume/api/resume.api";
-import { useUserStore } from "../../../../entities/user/model/user-store"; // Qo'shildi
+import { useUserStore } from "../../../../entities/user/model/user-store"; 
 import { Input } from "../../../../shared/ui/input";
 import { Button } from "../../../../shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/ui/card";
-import { toast } from "sonner"; // Alert o'rniga chiroyli xabarnoma
+import { toast } from "sonner"; 
 
 export default function CreateResumePage() {
   const router = useRouter();
-  const updateUser = useUserStore((state) => state.updateUser); // Store funksiyasi
+  const updateUser = useUserStore((state) => state.updateUser); 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -28,12 +28,12 @@ export default function CreateResumePage() {
     try {
       await resumeApi.create(formData);
       
-      // MUHIM: Store'ni yangilaymiz, shunda hasResume xatosi yo'qoladi
+      
       updateUser({ hasResume: true }); 
       
       toast.success("Rezyume muvaffaqiyatli saqlandi! ✅");
       
-      // Avvalgi sahifaga (vakansiyaga) qaytish
+      
       router.back(); 
     } catch (error: any) {
       console.error("Xatolik tafsiloti:", error.response?.data);
@@ -75,7 +75,7 @@ export default function CreateResumePage() {
               </div>
             </div>
 
-            {/* Qolgan inputlar ham shu kabi tartibda... */}
+            {}
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 ml-1">O'zingiz haqingizda (About)</label>

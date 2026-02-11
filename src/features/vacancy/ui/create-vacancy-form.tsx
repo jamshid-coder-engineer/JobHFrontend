@@ -18,7 +18,7 @@ export const CreateVacancyForm = () => {
     employmentType: "FULL_TIME",
   });
 
-  // Haqiqiy yuborish funksiyasi
+  
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submit bosildi! Ma'lumotlar:", formData);

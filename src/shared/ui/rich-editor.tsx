@@ -3,10 +3,10 @@
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 
-// 👇 O'ZGARISH: import manzilini 'react-quill' dan 'react-quill-new' ga o'zgartirdik
+
 import "react-quill-new/dist/quill.snow.css"; 
 
-// 🔥 Next.js uchun Dynamic Import
+
 const ReactQuill = dynamic(() => import("react-quill-new"), { 
   ssr: false,
   loading: () => <div className="h-64 bg-slate-50 animate-pulse rounded-xl" />

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";
 
-// 👇 1. RASMLAR MANZILI (Backend Porti 2026, Papka images/)
+
 const BASE_URL = "http://localhost:2026/uploads/images/";
 
 export default function SingleVacancyPage() {
@@ -32,15 +32,15 @@ export default function SingleVacancyPage() {
 
   const vacancy = data?.data || data;
 
-  // 👇 2. YANGILANGAN ARIZA TOPSHIRISH FUNKSIYASI
+  
   const handleApply = async () => {
-    // A) Login qilmagan bo'lsa
+    
     if (!isAuth) {
       toast.info("Ariza topshirish uchun tizimga kiring");
       return router.push("/login");
     }
 
-    // B) Rol tekshiruvi (Faqat Candidate)
+    
     if (user?.role !== "CANDIDATE") {
       return toast.error("Faqat nomzodlar ariza topshira oladi 🚫");
     }
@@ -50,12 +50,12 @@ export default function SingleVacancyPage() {
       await applicationApi.apply({ vacancyId: id as string });
       toast.success("Ariza muvaffaqiyatli yuborildi! 🎉");
     } catch (err: any) {
-      // C) XATOLARNI TUTIB OLISH VA YO'NALTIRISH
+      
       const msg = err.response?.data?.message;
 
       if (msg === "PROFILE_INCOMPLETE") {
         toast.error("Iltimos, avval rezyume yarating 📝");
-        // Rezyume yaratish sahifasiga yo'naltirish (1.5 soniyadan keyin)
+        
         setTimeout(() => router.push("/dashboard/profile"), 1500);
       } else if (msg === "ALREADY_APPLIED") {
         toast.warning("Siz allaqachon bu ishga topshirgansiz ✅");
@@ -74,7 +74,7 @@ export default function SingleVacancyPage() {
     <div className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header Navigation */}
+        {}
         <div className="flex justify-between items-center mb-6">
            <Button variant="ghost" onClick={() => router.back()} className="hover:bg-slate-200">
              <ArrowLeft size={18} className="mr-2"/> Orqaga
@@ -87,10 +87,10 @@ export default function SingleVacancyPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
            
-           {/* 👈 CHAP TOMON (ASOSIY MA'LUMOT) */}
+           {}
            <div className="lg:col-span-2 space-y-6">
               
-              {/* Katta Karta */}
+              {}
               <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
                  <div className="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
                  
@@ -99,7 +99,7 @@ export default function SingleVacancyPage() {
                        {vacancy.employmentType && <Badge variant="secondary">{vacancy.employmentType}</Badge>}
                        <Badge variant="outline" className="text-slate-500 flex gap-1"><Calendar size={12}/> {new Date(vacancy.createdAt).toLocaleDateString()}</Badge>
                     </div>
-                    {/* Orqa fon bezagi */}
+                    {}
                     <div className="text-9xl font-black text-slate-50 absolute -right-4 -top-4 select-none -z-0">
                        {vacancy.title?.[0]}
                     </div>
@@ -118,7 +118,7 @@ export default function SingleVacancyPage() {
                  </div>
               </div>
 
-              {/* Tavsif */}
+              
               <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
                  <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <Briefcase className="text-blue-600"/> Vakansiya haqida
@@ -130,14 +130,14 @@ export default function SingleVacancyPage() {
 
            </div>
 
-           {/* 👉 O'NG TOMON (SIDEBAR) */}
+           
            <div className="space-y-6">
               
-              {/* 1. KOMPANIYA KARTASI (LOGO BILAN) */}
+              
               <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm text-center">
                  <div className="w-20 h-20 mx-auto bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 shadow-inner overflow-hidden">
                     
-                    {/* 👇 LOGO LOGIKASI */}
+                    
                     {vacancy.company?.logo ? (
                       <img 
                          src={`${BASE_URL}${vacancy.company.logo}`} 
@@ -159,7 +159,7 @@ export default function SingleVacancyPage() {
                  </Link>
               </div>
 
-              {/* 2. ARIZA TOPSHIRISH KARTASI */}
+              
               <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm sticky top-6">
                  <h3 className="font-bold text-slate-800 mb-4">Qiziqdingizmi?</h3>
                  <Button 
@@ -174,7 +174,7 @@ export default function SingleVacancyPage() {
                     <CheckCircle size={12}/> Rezyume avtomatik yuboriladi
                  </p>
                  
-                 {/* Qo'shimcha eslatma */}
+                 
                  {!isAuth && (
                    <p className="text-[10px] text-center text-slate-400 mt-2">
                      Topshirish uchun tizimga kiring

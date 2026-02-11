@@ -10,16 +10,16 @@ import { toast } from "sonner";
 
 export default function AdminsManagementPage() {
   const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false); // Modal ochish/yopish
+  const [isOpen, setIsOpen] = useState(false); 
   const [form, setForm] = useState({ firstName: "", email: "", password: "" });
 
-  // 1. Adminlar ro'yxatini olish
+  
   const { data, isLoading } = useQuery({
     queryKey: ["admins-list"],
     queryFn: () => adminApi.getAdmins(),
   });
 
-  // 2. Yaratish
+  
   const createMutation = useMutation({
     mutationFn: (data: any) => adminApi.createAdmin(data),
     onSuccess: () => {
@@ -31,7 +31,7 @@ export default function AdminsManagementPage() {
     onError: (err: any) => toast.error(err.response?.data?.message || "Xatolik"),
   });
 
-  // 3. O'chirish
+  
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteAdmin(id),
     onSuccess: () => {
@@ -56,7 +56,7 @@ export default function AdminsManagementPage() {
         </Button>
       </div>
 
-      {/* RO'YXAT */}
+      {}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="p-10 flex justify-center"><Loader2 className="animate-spin"/></div>
@@ -95,7 +95,7 @@ export default function AdminsManagementPage() {
         )}
       </div>
 
-      {/* MODAL (Yaratish uchun) */}
+      {}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">

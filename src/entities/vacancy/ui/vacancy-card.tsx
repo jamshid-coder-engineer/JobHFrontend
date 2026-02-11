@@ -3,7 +3,7 @@ import { Badge } from "../../../shared/ui/badge";
 import Link from "next/link";
 
 interface VacancyCardProps {
-  id: string; // ID qo'shildi
+  id: string; 
   title: string;
   company?: { name: string };
   salaryFrom?: string;

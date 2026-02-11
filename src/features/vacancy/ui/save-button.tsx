@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "../../../entities/user/model/user-store"; // Yo'lni tekshiring
+import { useUserStore } from "../../../entities/user/model/user-store"; 
 import { vacancyApi } from "../api/create-vacancy.api"; 
 import { Button } from "../../../shared/ui/button";
 
@@ -20,13 +20,13 @@ export const SaveButton = ({ vacancyId, initialSaved = false }: SaveButtonProps)
   const [loading, setLoading] = useState(false);
 
   const handleToggle = async (e: React.MouseEvent) => {
-    // 🛑 Muhim: Card bosilib ketmasligi uchun hodisani to'xtatamiz
+    
     e.stopPropagation(); 
     e.preventDefault();
 
     if (!isAuth) {
       toast.info("Saqlash uchun tizimga kiring");
-      // Agar login sahifasi boshqa joyda bo'lsa, to'g'irlang
+      
       router.push("/login"); 
       return;
     }
@@ -38,13 +38,13 @@ export const SaveButton = ({ vacancyId, initialSaved = false }: SaveButtonProps)
 
     setLoading(true);
     const previousState = isSaved;
-    setIsSaved(!isSaved); // Optimistik UI (darhol o'zgartiramiz)
+    setIsSaved(!isSaved); 
 
     try {
       await vacancyApi.toggleSave(vacancyId);
-      // Agar muvaffaqiyatli bo'lsa, backend o'zi hal qiladi
+      
     } catch (err) {
-      setIsSaved(previousState); // Xato bo'lsa qaytaramiz
+      setIsSaved(previousState); 
       toast.error("Xatolik yuz berdi");
     } finally {
       setLoading(false);

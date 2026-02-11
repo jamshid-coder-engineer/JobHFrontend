@@ -22,7 +22,7 @@ export default function CompanySettingsPage() {
     description: "",
   });
 
-  // 1. KOMPANIYA MA'LUMOTLARINI OLISH
+  
   const { data, isLoading } = useQuery({
     queryKey: ["my-company"],
     queryFn: () => companyApi.getMyCompany(),
@@ -40,7 +40,7 @@ export default function CompanySettingsPage() {
     }
   }, [company]);
 
-  // 2. LOGO YANGILASH
+  
   const uploadLogoMutation = useMutation({
     mutationFn: (file: File) => companyApi.uploadLogo(file),
     onSuccess: () => {
@@ -51,9 +51,9 @@ export default function CompanySettingsPage() {
     onError: () => toast.error("Rasm yuklashda xatolik bo'ldi"),
   });
 
-  // 3. MA'LUMOTLARNI SAQLASH (TUZATILDI) ✅
+  
   const updateInfoMutation = useMutation({
-    mutationFn: (data: any) => companyApi.updateMyCompany(data), // 👈 update -> updateMyCompany
+    mutationFn: (data: any) => companyApi.updateMyCompany(data), 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-company"] });
       toast.success("Ma'lumotlar saqlandi! ✅");
@@ -88,7 +88,7 @@ export default function CompanySettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* LOGO QISMI */}
+        {}
         <div className="space-y-6">
            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
               <div className="relative group cursor-pointer inline-block">
@@ -121,7 +121,7 @@ export default function CompanySettingsPage() {
            </div>
         </div>
 
-        {/* FORMA QISMI */}
+        
         <div className="md:col-span-2 space-y-6">
            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
               <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2 pb-4 border-b border-slate-100">

@@ -41,7 +41,7 @@ export default function SavedJobsPage() {
            {vacancies.map((v: any) => (
              <div key={v.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative group">
                 
-                {/* O'chirish tugmasi (SaveButton o'zi handle qiladi) */}
+                {}
                 <div className="absolute top-4 right-4">
                    <SaveButton vacancyId={v.id} initialSaved={true} />
                 </div>

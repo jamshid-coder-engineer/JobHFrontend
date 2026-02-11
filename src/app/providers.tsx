@@ -8,7 +8,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // Ma'lumotlar 1 daqiqa "yangi" hisoblanadi
+        staleTime: 60 * 1000, 
         retry: 1,
       },
     },

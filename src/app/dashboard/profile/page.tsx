@@ -5,20 +5,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FileText, UploadCloud, Loader2, Eye, MapPin, Briefcase, User, Phone, Download } from "lucide-react";
 
-// API & STORE
+
 import { $api } from "../../../shared/api/axios-instance";
 import { resumeApi } from "../../../features/resume/api/resume.api";
-import { useUserStore } from "../../../entities/user/model/user-store"; // 👈 Store ishlatamiz
+import { useUserStore } from "../../../entities/user/model/user-store"; 
 import { Button } from "../../../shared/ui/button";
 import { Input } from "../../../shared/ui/input";
 
-// 👇 PORTNI TO'G'IRLADIK (3026 -> 2026)
-// Agar backend faylni "uploads/..." deb qaytarsa, shunchaki base url yetarli.
+
+
 const BASE_URL = "http://localhost:2026/"; 
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { user, updateUser } = useUserStore(); // 👈 Store dan foydalanamiz
+  const { user, updateUser } = useUserStore(); 
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -27,7 +27,7 @@ export default function ProfilePage() {
     jobTitle: "", 
   });
 
-  // 1. STOREDAN MA'LUMOT OLISH (Reaktiv)
+  
   useEffect(() => {
     if (user) {
       setFormData({
@@ -39,23 +39,23 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  // 2. REZYUMENI OLISH
+  
   const { data: resumeData, isLoading: isResumeLoading } = useQuery({
     queryKey: ["my-resume"],
     queryFn: () => resumeApi.getMe(),
     retry: 1,
   });
 
-  // --- MUTATSIYALAR ---
+  
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Telefon raqamni tozalab yuborish (bo'sh joylarsiz)
+      
       const payload = { ...data, phone: data.phone.replace(/\s/g, "") };
       return await $api.patch("/auth/profile", payload);
     },
     onSuccess: (res) => {
       toast.success("Profil yangilandi! ✅");
-      // Storeni ham yangilaymiz
+      
       updateUser(formData);
     },
     onError: (err: any) => toast.error(err.response?.data?.message || "Xatolik yuz berdi"),
@@ -70,7 +70,7 @@ export default function ProfilePage() {
     onError: (err: any) => toast.error(err.response?.data?.message || "Fayl yuklashda xatolik!"),
   });
 
-  // 🛠 TELEFON FORMATTERI
+  
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/\D/g, ""); 
     if (!val.startsWith("998")) val = "998" + val;
@@ -109,7 +109,7 @@ export default function ProfilePage() {
         <p className="text-slate-500 font-medium">Shaxsiy ma'lumotlar va Rezyume boshqaruvi</p>
       </div>
 
-      {/* 1-BLOK: SHAXSIY MA'LUMOTLAR */}
+      {}
       <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
         <h2 className="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
           <User className="text-blue-600" size={24}/> Shaxsiy ma'lumotlar
@@ -178,7 +178,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* 2-BLOK: CV YUKLASH */}
+      {}
       <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
         <h2 className="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
           <FileText className="text-blue-600" size={24}/> Rezyume / CV
@@ -201,7 +201,7 @@ export default function ProfilePage() {
               </div>
               
               <div className="flex gap-2 w-full md:w-auto">
-                  {/* KO'RISH TUGMASI */}
+                  {}
                   <a 
                     href={`${BASE_URL}${resumeData.cvFile}`} 
                     target="_blank" 
@@ -213,7 +213,7 @@ export default function ProfilePage() {
                      </Button>
                   </a>
                   
-                  {/* YANGILASH INPUTI */}
+                  
                   <label className="flex-1 cursor-pointer">
                      <div className="bg-blue-600 hover:bg-blue-700 text-white h-10 px-6 rounded-xl font-bold flex items-center justify-center transition-colors text-sm shadow-md shadow-blue-200">
                         Yangilash

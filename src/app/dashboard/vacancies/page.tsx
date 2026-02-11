@@ -12,13 +12,13 @@ import { toast } from "sonner";
 export default function MyVacanciesPage() {
   const queryClient = useQueryClient();
 
-  // 1. VAKANSIYALARNI OLISH
+  
   const { data, isLoading } = useQuery({
     queryKey: ["my-vacancies"],
     queryFn: () => vacancyApi.getMyVacancies(),
   });
 
-  // 2. O'CHIRISH LOGIKASI
+  
   const deleteMutation = useMutation({
     mutationFn: (id: string) => vacancyApi.deleteVacancy(id),
     onSuccess: () => {
@@ -33,10 +33,10 @@ export default function MyVacanciesPage() {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
       
-      {/* 1. PREMIUM BANNER (Marketing) */}
+      {}
       <PremiumBanner />
 
-      {/* 2. NAVIGATSIYA VA CREATE TUGMASI */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Link href="/" className="text-sm text-slate-500 hover:text-blue-600 flex items-center gap-2 transition-colors font-medium">
           <ArrowLeft size={16} /> Bosh sahifaga qaytish
@@ -49,7 +49,7 @@ export default function MyVacanciesPage() {
         </Link>
       </div>
 
-      {/* 3. RO'YXAT QISMI */}
+      {}
       <div className="space-y-6">
         <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3">
           Sizning e'lonlaringiz 
@@ -58,7 +58,7 @@ export default function MyVacanciesPage() {
           </span>
         </h3>
 
-        {/* LOADING STATE */}
+        {}
         {isLoading && (
           <div className="flex flex-col items-center py-20 text-slate-400">
             <Loader2 className="w-10 h-10 animate-spin mb-4 text-blue-600" />
@@ -66,7 +66,7 @@ export default function MyVacanciesPage() {
           </div>
         )}
 
-        {/* EMPTY STATE (Agar vakansiya bo'lmasa) */}
+        {}
         {!isLoading && vacancies.length === 0 && (
           <div className="p-20 text-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
             <Briefcase className="w-16 h-16 text-slate-200 mx-auto mb-4" />
@@ -74,27 +74,27 @@ export default function MyVacanciesPage() {
           </div>
         )}
 
-        {/* VAKANSIYALAR RO'YXATI */}
+        {}
         <div className="grid gap-4">
           {vacancies.map((v: any) => (
             <div key={v.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all border-l-[10px] border-l-blue-600 group relative overflow-hidden flex flex-col gap-4">
               
-              {/* STATUS PENDING BO'LSA ORQA FONDA OGOHLANTIRISH */}
+              {}
               {v.status === 'PENDING' && (
                 <div className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl z-10">
                   MODERATSIYADA
                 </div>
               )}
 
-              {/* ASOSIY MA'LUMOTLAR VA TUGMALAR */}
+              {}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
                 
-                {/* CHAP TOMON: TITLE VA INFO */}
+                {}
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <h4 className="font-bold text-xl text-slate-800 group-hover:text-blue-600 transition-colors">{v.title}</h4>
                     
-                    {/* STATUS BADGELARI */}
+                    {}
                     <Badge className={`uppercase text-[10px] ${
                       v.status === 'PUBLISHED' ? 'bg-green-50 text-green-600 border-green-100' : 
                       v.status === 'REJECTED' ? 'bg-red-50 text-red-600 border-red-100' :
@@ -103,7 +103,7 @@ export default function MyVacanciesPage() {
                       {v.status === 'PENDING' ? 'KUTILMOQDA' : v.status}
                     </Badge>
 
-                    {/* PREMIUM BELGISI */}
+                    
                     {v.isPremium && (
                       <Badge className="bg-indigo-50 text-indigo-600 border-indigo-100 uppercase text-[10px] flex items-center gap-1">
                         <Crown size={12} fill="currentColor" /> Premium
@@ -116,18 +116,18 @@ export default function MyVacanciesPage() {
                       <MapPin size={16} className="text-slate-400"/> {v.city || 'Shahar ko\'rsatilmagan'}
                     </span>
                     
-                    {/* ARIZALARGA O'TISH LINKI */}
+                    
                     <Link href="/dashboard/employer-applications">
                       <button className="flex items-center gap-1.5 text-blue-600 font-bold hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-blue-100">
                         <Users size={16}/> 
-                        {/* Backenddagi applications array uzunligi */}
+                        
                         {v.applications?.length || 0} ta ariza
                       </button>
                     </Link>
                   </div>
                 </div>
                 
-                {/* O'NG TOMON: ACTION BUTTONS (Edit/Delete) */}
+                
                 <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                   <Link href={`/dashboard/vacancies/edit/${v.id}`} className="flex-1 md:flex-none">
                     <Button variant="outline" className="w-full rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 gap-2 font-bold">
@@ -146,7 +146,7 @@ export default function MyVacanciesPage() {
                 </div>
               </div>
 
-              {/* ⚠️ RAD ETISH SABABI (Faqat Rejected bo'lsa chiqadi) */}
+              
               {v.status === 'REJECTED' && v.rejectedReason && (
                 <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 w-full">
                   <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />

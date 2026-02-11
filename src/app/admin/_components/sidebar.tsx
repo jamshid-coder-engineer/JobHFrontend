@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useUserStore } from "../../../entities/user/model/user-store";
 import { 
   LayoutDashboard, Building2, Briefcase, 
-  ShieldCheck, LogOut, ChevronLeft, ChevronRight 
+  ShieldCheck, ChevronLeft, ChevronRight 
 } from "lucide-react";
 
 interface SidebarProps {
@@ -15,7 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, toggleCollapsed }: SidebarProps) {
   const pathname = usePathname();
-  const { user, logout } = useUserStore();
+  const { user } = useUserStore();
 
   const menuItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -27,11 +27,14 @@ export function Sidebar({ collapsed, toggleCollapsed }: SidebarProps) {
     <aside 
       className={`
         fixed left-0 top-0 h-screen bg-slate-900 text-white transition-all duration-300 flex flex-col border-r border-slate-800
-        z-[999]  /* 👈 ENG MUHIM JOYI: Hamma narsani ustida turadi */
+        z-40  
         ${collapsed ? "w-20" : "w-64"} 
       `}
     >
-      <div className="flex items-center justify-between p-6 h-38 border-b border-slate-800">
+      {/* Top padding - Header uchun joy */}
+      <div className="h-20"></div>
+
+      <div className="flex items-center justify-between p-6 border-b border-slate-800">
         
         {!collapsed && (
           <div className="animate-in fade-in duration-300 overflow-hidden whitespace-nowrap">
@@ -83,17 +86,6 @@ export function Sidebar({ collapsed, toggleCollapsed }: SidebarProps) {
           </>
         )}
       </nav>
-
-      <div className="p-4 border-t border-slate-800">
-        <button 
-          onClick={logout}
-          title="Chiqish"
-          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-medium overflow-hidden whitespace-nowrap ${collapsed ? "justify-center" : ""}`}
-        >
-          <LogOut size={22} className="flex-shrink-0" />
-          {!collapsed && <span>Chiqish</span>}
-        </button>
-      </div>
     </aside>
   );
 }

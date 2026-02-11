@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Search, Building2, AlertCircle, UploadCloud, Image as ImageIcon, ArrowRight, X } from "lucide-react";
 
-// API & UI
+
 import { companyApi } from "../../../../features/company/api/company.api";
 import { Button } from "../../../../shared/ui/button";
 import { Input } from "../../../../shared/ui/input";
@@ -15,25 +15,24 @@ export default function CreateCompanyPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   
-  // 🔥 STATE: Bosqichlarni boshqarish ('inn' yoki 'logo')
+  
   const [step, setStep] = useState<'inn' | 'logo'>('inn');
   
-  // INN uchun state
+  
   const [inn, setInn] = useState("");
 
-  // Logo uchun state
+  
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // 1️⃣ INN ORQALI YARATISH
+  
   const createByInnMutation = useMutation({
     mutationFn: (innValue: string) => companyApi.createByInn(innValue),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["my-company"] });
       const companyName = res.data?.data?.name || "Kompaniya";
       toast.success(`${companyName} muvaffaqiyatli ro'yxatdan o'tdi! 🎉`);
-      
-      // 🚀 DARHOL KEYINGI BOSQICHGA O'TAMIZ (Redirect qilmaymiz)
+
       setStep('logo');
     },
     onError: (err: any) => {
@@ -42,7 +41,6 @@ export default function CreateCompanyPage() {
     }
   });
 
-  // 2️⃣ LOGO YUKLASH MUTATSIYASI
   const uploadLogoMutation = useMutation({
     mutationFn: (file: File) => companyApi.uploadLogo(file), // API da bu metod bo'lishi kerak
     onSuccess: () => {
@@ -55,7 +53,6 @@ export default function CreateCompanyPage() {
     }
   });
 
-  // 🏁 JARAYONNI TUGATISH
   const finishProcess = () => {
     queryClient.invalidateQueries({ queryKey: ["my-company"] });
     router.push("/dashboard/vacancies/create");
@@ -72,7 +69,7 @@ export default function CreateCompanyPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 2MB dan katta bo'lmasligi kerak
+
       if (file.size > 2 * 1024 * 1024) {
         toast.warning("Rasm hajmi 2MB dan oshmasligi kerak");
         return;
@@ -91,7 +88,7 @@ export default function CreateCompanyPage() {
     <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
       <div className="max-w-xl w-full space-y-8">
         
-        {/* --- HEADER --- */}
+        
         <div className="text-center space-y-2">
            <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
               {step === 'inn' ? <Building2 size={32} /> : <ImageIcon size={32} />}
@@ -106,7 +103,7 @@ export default function CreateCompanyPage() {
            </p>
         </div>
 
-        {/* --- 1-BOSQICH: INN --- */}
+        
         {step === 'inn' && (
           <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 animate-in fade-in zoom-in duration-300">
              <label className="text-sm font-bold text-slate-700 mb-2 block">
@@ -132,7 +129,7 @@ export default function CreateCompanyPage() {
                {createByInnMutation.isPending ? <Loader2 className="animate-spin mr-2"/> : "Qidirish va Yaratish"}
              </Button>
 
-             {/* Test Hint */}
+             
              <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-500 space-y-2">
                 <p className="font-bold text-slate-600 flex items-center gap-2"><AlertCircle size={14}/> Test INN:</p>
                 <div className="grid grid-cols-2 gap-2">
@@ -143,7 +140,7 @@ export default function CreateCompanyPage() {
           </div>
         )}
 
-        {/* --- 2-BOSQICH: LOGO --- */}
+        
         {step === 'logo' && (
           <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 animate-in slide-in-from-right duration-300">
             

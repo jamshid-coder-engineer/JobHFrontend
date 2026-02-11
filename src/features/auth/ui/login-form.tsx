@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // Link qo'shildi (Ro'yxatdan o'tishga yo'naltirish uchun)
+import Link from "next/link"; 
 import { useUserStore } from "../../../entities/user/model/user-store";
 import { loginUser } from "../api/login-api";
 import { Input } from "../../../shared/ui/input";
 import { Button } from "../../../shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/card";
-import { Loader2 } from "lucide-react"; // Loading ikonkasi
+import { Loader2 } from "lucide-react"; 
 
 export const LoginForm = () => {
-  // Test uchun default qiymatlar
   const [email, setEmail] = useState("saribayevj1666@gmail.com");
   const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
@@ -25,10 +24,9 @@ export const LoginForm = () => {
     try {
       const res = await loginUser({ email, password });
       
-      // Mantiq o'z joyida qoldi
-      setAuth(res.data.user, res.data.accessToken);
-      console.log("Login muvaffaqiyatli:", res.data.user.role);
-
+      
+      setAuth(res.data.user);
+      
       setTimeout(() => {
         if (res.data.user.role === "ADMIN" || res.data.user.role === "SUPER_ADMIN") {
           router.push("/admin");
@@ -39,7 +37,6 @@ export const LoginForm = () => {
 
     } catch (error) {
       console.error("Login Error:", error);
-      // Bu yerda chiroyli Toast ishlatsangiz yanada yaxshi bo'ladi
       alert("Email yoki parol xato!");
     } finally {
       setLoading(false);
@@ -47,62 +44,64 @@ export const LoginForm = () => {
   };
 
   return (
-    // 3. FORMA KARTASI: Glassmorphism (Oyna effekti)
-    <Card className="w-full max-w-md border-0 shadow-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/20">
-      <CardHeader className="pb-2 text-center">
-        <CardTitle className="text-2xl font-bold text-white">
+    <Card className="w-full max-w-lg border-0 shadow-2xl bg-white/10 backdrop-blur-xl ring-1 ring-white/20 p-2">
+      <CardHeader className="pb-4 text-center">
+        <CardTitle className="text-3xl font-black text-white tracking-tight">
           Tizimga kirish
         </CardTitle>
-        <p className="text-sm text-slate-300">
+        <p className="text-base text-slate-300 mt-2">
           Sahifangizga kirish uchun ma'lumotlarni kiriting
         </p>
       </CardHeader>
       
-      <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <CardContent className="pt-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-200 ml-1">Email</label>
+            <label className="text-base font-medium text-slate-200 ml-1">Email</label>
             <Input 
               type="email"
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required 
               placeholder="email@example.com"
-              // Input stili o'zgardi (shaffof fon)
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-400 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 h-12 text-lg"
+              className="bg-white/5 border-white/10 text-white placeholder:text-slate-400 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 h-14 text-lg px-4 rounded-xl"
             />
           </div>
           
           <div className="space-y-2">
-             <div className="flex justify-between">
-                <label className="text-sm font-medium text-slate-200 ml-1">Parol</label>
-             </div>
+             <label className="text-base font-medium text-slate-200 ml-1">Parol</label>
+            
             <Input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
               placeholder="******"
-              className="bg-white/5 border-white/10 text-white placeholder:text-slate-400 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 h-12 text-lg tracking-widest"
+              className="bg-white/5 border-white/10 text-white placeholder:text-slate-400 focus-visible:ring-blue-500/50 focus-visible:border-blue-500 h-14 text-lg tracking-widest px-4 rounded-xl"
             />
-                <Link href="/forgot-password" className="text-sm text-blue-300 hover:text-blue-200">Unutdingizmi?</Link>
+            
+            <div className="flex justify-end pt-1">
+                <Link href="/forgot-password" className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                  Unutdingizmi?
+                </Link>
+            </div>
           </div>
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 shadow-lg shadow-green-500/30 border-0 mt-4 transition-all active:scale-[0.98]" 
+            className="w-full h-14 text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30 border-0 mt-4 rounded-xl transition-all active:scale-[0.98]" 
             disabled={loading}
           >
             {loading ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Kirilmoqda...</>
+              <><Loader2 className="mr-2 h-6 w-6 animate-spin" /> Kirilmoqda...</>
             ) : (
               "Kirish"
             )}
           </Button>
         </form>
 
-        <div className="mt-8 text-center text-sm text-slate-300">
-          Sahifangiz yo'qmi? <Link href="/register" className="text-blue-300 font-bold hover:text-blue-200 transition-colors underline-offset-4 hover:underline">Ro'yxatdan o'tish</Link>
+        <div className="mt-10 text-center text-base text-slate-300">
+          Sahifangiz yo'qmi? <Link href="/register" className="text-blue-400 font-bold hover:text-blue-300 transition-colors underline-offset-4 hover:underline ml-1">Ro'yxatdan o'tish</Link>
         </div>
       </CardContent>
     </Card>

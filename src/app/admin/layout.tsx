@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "../../entities/user/model/user-store";
 import { Sidebar } from "./_components/sidebar";
+import { AdminHeader } from "./_components/admin-header";
 import { Loader2 } from "lucide-react"; 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuth, _hasHydrated } = useUserStore();
   const router = useRouter();
 
-  // SIDEBAR HOLATI (Ochiq/Yopiq)
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -35,22 +35,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAuth) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50">
       
-      {/* 1. SIDEBAR */}
+      {/* Admin Header */}
+      <AdminHeader />
+      
+      {/* Sidebar - to'liq balandlikda */}
       <Sidebar 
         collapsed={collapsed} 
         toggleCollapsed={() => setCollapsed(!collapsed)} 
       />
 
-      {/* 2. MAIN CONTENT (Asosiy qism) */}
+      {/* Main content */}
       <main 
         className={`
-          flex-1 transition-all duration-300 p-6 pt-24 md:pt-6
-          ${collapsed ? "ml-20" : "ml-64"} /* Sidebar kengligiga qarab suriladi */
+          min-h-screen transition-all duration-300 p-6 pt-24
+          ${collapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64"} 
         `}
       >
-        {/* Agar oq header haliyam xalaqit bersa, tepadagi bo'sh joyni (pt-24) olib tashlash mumkin */}
         {children}
       </main>
     </div>

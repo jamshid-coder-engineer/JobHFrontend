@@ -1,19 +1,19 @@
 import { $api } from "../../../shared/api/axios-instance";
 
 export const adminApi = {
-  // Umumiy statistika
+  
   getStats: async () => {
     const response = await $api.get("/admin/statistics");
     return response.data;
   },
 
-  // Kompaniyalarni status bo'yicha list qilish
+  
   getCompanies: async (status?: string) => {
     const response = await $api.get("/admin/companies", { params: { status } });
     return response.data;
   },
 
-  // ...
+  
   createAdmin: async (data: any) => (await $api.post("/admin/create", data)).data,
 
   getAdmins: async () => (await $api.get("/admin/list")).data,
@@ -28,7 +28,6 @@ export const adminApi = {
     return (await $api.patch(`/admin/companies/${id}/reject`, { reason })).data;
   },
 
-  // Vakansiyalar moderatsiyasi
   getVacancies: async (status?: string) => {
     const response = await $api.get("/admin/vacancies", { params: { status } });
     return response.data;
@@ -42,7 +41,7 @@ export const adminApi = {
 },
 
 setPremium: async (id: string, days: number) => {
-  // Bekentdagi @Patch(':id/premium') endpointiga mos kelishi kerak
+
   const response = await $api.patch(`/admin/vacancies/${id}/premium`, { days });
   return response.data;
 },

@@ -1,12 +1,12 @@
 "use client";
 
 import { Crown, Send } from "lucide-react";
-import { Button } from "./button"; // Agar button boshqa joyda bo'lsa yo'lni to'g'irla
+import { Button } from "./button"; 
 
 export const PremiumBanner = () => {
   return (
     <div className="bg-gradient-to-r from-indigo-900 to-blue-800 rounded-[2rem] p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden mb-8">
-      {/* Orqa fon bezagi */}
+      {}
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none"></div>
       
       <div className="space-y-2 relative z-10 text-center md:text-left">

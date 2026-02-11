@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
-import { vacancyApi } from "../../../../../features/vacancy/api/create-vacancy.api"; // Yo'lni tekshiring
+import { vacancyApi } from "../../../../../features/vacancy/api/create-vacancy.api"; 
 import { Button } from "../../../../../shared/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -12,24 +12,24 @@ import { useEffect } from "react";
 
 export default function EditVacancyPage() {
   const params = useParams();
-  const id = params?.id as string; // ID ni string qilib olamiz
+  const id = params?.id as string; 
   const router = useRouter();
   const queryClient = useQueryClient();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // 1. Mavjud ma'lumotlarni yuklab olish
+  
   const { data: vacancyData, isLoading } = useQuery({
     queryKey: ["vacancy", id],
-    // ⚠️ TO'G'IRLANDI: findOne emas, getOne
+    
     queryFn: () => vacancyApi.getOne(id),
-    enabled: !!id, // ID bo'lmasa so'rov yubormasin
+    enabled: !!id, 
   });
 
-  // Ma'lumot kelishi bilan formani to'ldiramiz
+  
   useEffect(() => {
     if (vacancyData) {
-      // Backenddan kelgan data (ba'zan data.data ichida bo'ladi, tekshiramiz)
+      
       const data = vacancyData.data || vacancyData;
       reset({
         title: data.title,
@@ -42,13 +42,13 @@ export default function EditVacancyPage() {
     }
   }, [vacancyData, reset]);
 
-  // 2. O'zgarishlarni saqlash (Patch)
+  
   const mutation = useMutation({
-    // ⚠️ TO'G'IRLANDI: updateVacancy emas, update
+    
     mutationFn: (data: any) => vacancyApi.update(id, data),
     onSuccess: () => {
       toast.success("O'zgarishlar saqlandi! ✅");
-      // Eski ma'lumotlarni keshdan o'chiramiz
+      
       queryClient.invalidateQueries({ queryKey: ["my-vacancies"] });
       queryClient.invalidateQueries({ queryKey: ["vacancy", id] });
       router.push("/dashboard/vacancies");
@@ -60,12 +60,12 @@ export default function EditVacancyPage() {
   });
 
   const onSubmit = (data: any) => {
-    // Backend faqat mana shu maydonlarni qabul qiladi
+    
     const updateDto: any = {
       title: data.title,
       description: data.description,
       city: data.city,
-      salaryFrom: Number(data.salaryFrom), // String kelsa numberga o'tkazamiz
+      salaryFrom: Number(data.salaryFrom), 
       salaryTo: Number(data.salaryTo),
       employmentType: data.employmentType,
     };

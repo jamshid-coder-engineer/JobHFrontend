@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   MapPin, Loader2, Search, 
-  DollarSign, Briefcase, Filter, Crown 
-} from "lucide-react"; // Building2 olib tashlandi (kerak emas)
+  DollarSign, Briefcase, Filter, Crown, X 
+} from "lucide-react";
 import { toast } from "sonner"; 
 
-// API IMPORTLARI
+
 import { vacancyApi } from "../features/vacancy/api/create-vacancy.api"; 
 import { applicationApi } from "../features/application/api/application.api"; 
 import { useUserStore } from "../entities/user/model/user-store"; 
 import { Button } from "../shared/ui/button";
 import { Badge } from "../shared/ui/badge";
 import { SaveButton } from "../features/vacancy/ui/save-button"; 
-
-// 🔥 YANGI LOGO KOMPONENTI (BASE_URL kerak emas endi)
 import { CompanyLogo } from "../shared/ui/company-logo"; 
 
 export default function HomePage() {
@@ -34,7 +32,11 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const { user, isAuth } = useUserStore();
 
-  const [applyingId, setApplyingId] = useState<string | null>(null);
+  
+  const [queryInput, setQueryInput] = useState(searchParams.get("q") || "");
+  const [cityInput, setCityInput] = useState(searchParams.get("city") || "");
+
+  
   const [filters, setFilters] = useState({
     q: searchParams.get("q") || "",
     city: searchParams.get("city") || "",
@@ -43,24 +45,87 @@ function HomeContent() {
     date: searchParams.get("date") || "",
   });
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
 
+  
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+
+  
   const { data, isLoading } = useQuery({
     queryKey: ["public-vacancies", filters], 
     queryFn: () => vacancyApi.getPublicVacancies(filters),
+    placeholderData: (prev) => prev, 
   });
 
   const vacancies = data?.data?.data || [];
 
+  
   useEffect(() => {
     if (Array.isArray(vacancies) && vacancies.length > 0 && !selectedId && window.innerWidth >= 768) {
       setSelectedId(vacancies[0].id);
     }
   }, [vacancies, selectedId]);
 
-  const updateFilter = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+  
+  const handleQueryChange = (val: string) => {
+    setQueryInput(val);
+    
+    
+    if (!val.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const res = await vacancyApi.getSuggestions(val); 
+        setSuggestions(res || []);
+        setShowSuggestions(true);
+      } catch (e) {
+        console.error(e);
+      }
+    }, 300);
+  };
+
+  const handleCityChange = (val: string) => {
+    setCityInput(val);
+    if (!val.trim()) {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+      return;
+    }
+
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const res = await vacancyApi.getCitySuggestions(val);
+        setCitySuggestions(res || []);
+        setShowCitySuggestions(true);
+      } catch (e) { console.error(e); }
+    }, 300);
+  };
+
+  
+  const handleSearch = () => {
+    setShowSuggestions(false);
+    setShowCitySuggestions(false);
+    
+    
+    const newFilters = { ...filters, q: queryInput, city: cityInput };
     setFilters(newFilters);
+
+    
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([k, v]) => {
       if (v) params.set(k, v);
@@ -68,12 +133,24 @@ function HomeContent() {
     router.push(`/?${params.toString()}`, { scroll: false });
   };
 
-  const handleCardClick = (id: string) => {
-    if (window.innerWidth < 768) {
-       router.push(`/vacancies/${id}`);
+  const selectSuggestion = (val: string, type: 'q' | 'city') => {
+    if (type === 'q') {
+      setQueryInput(val);
+      setShowSuggestions(false);
     } else {
-       setSelectedId(id);
+      setCityInput(val);
+      setShowCitySuggestions(false);
     }
+  };
+
+  const updateFilter = (key: string, value: string) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+  };
+
+  const handleCardClick = (id: string) => {
+    if (window.innerWidth < 768) router.push(`/vacancies/${id}`);
+    else setSelectedId(id);
   };
 
   const handleApply = async (vacancyId: string) => {
@@ -110,35 +187,84 @@ function HomeContent() {
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       
-      {/* HEADER QISMI (O'zgarishsiz) */}
       <div className="bg-white border-b border-slate-200 z-20 shadow-sm relative">
         <div className="max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
           <div className="text-center animate-in fade-in slide-in-from-top-2">
              <h1 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tight">
-               Tech<span className="text-blue-600">Jobs</span> bir zumda <span className="text-blue-600">NATIJA</span>ga erishing!
+             <span className="text-cyan-600">TechJobs</span> bilan <span className="text-cyan-600">NATIJA</span>ga erishing!
              </h1>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-0 md:gap-0 shadow-lg shadow-blue-100/50 rounded-2xl overflow-hidden border border-slate-200">
-             <div className="relative flex-1 border-b md:border-b-0 md:border-r border-slate-200 bg-white group hover:bg-slate-50 transition-colors">
+          <div className="flex flex-col md:flex-row gap-0 md:gap-0 shadow-lg shadow-blue-100/50 rounded-2xl border border-slate-200 relative z-30">
+             
+             
+             <div className="relative flex-1 border-b md:border-b-0 md:border-r border-slate-200 bg-white group transition-colors">
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600" size={20}/>
                <input 
                  placeholder="Lavozim, kompaniya yoki kalit so'z..." 
                  className="w-full h-14 pl-12 pr-4 bg-transparent outline-none text-slate-700 font-medium placeholder:text-slate-400 placeholder:font-normal"
-                 value={filters.q}
-                 onChange={(e) => updateFilter("q", e.target.value)}
+                 value={queryInput}
+                 onChange={(e) => handleQueryChange(e.target.value)}
+                 onFocus={() => { if(suggestions.length > 0) setShowSuggestions(true); }}
+                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                />
+               {queryInput && (
+                 <button onClick={() => {setQueryInput(""); setSuggestions([]);}} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+                   <X size={16}/>
+                 </button>
+               )}
+
+               
+               {showSuggestions && suggestions.length > 0 && (
+                 <div className="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-b-xl shadow-xl mt-1 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                    {suggestions.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => selectSuggestion(item, 'q')}
+                        className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 text-slate-700 font-medium border-b border-slate-50 last:border-0"
+                      >
+                         <Search size={16} className="text-slate-400"/>
+                         {item}
+                      </div>
+                    ))}
+                 </div>
+               )}
              </div>
-             <div className="relative flex-1 bg-white group hover:bg-slate-50 transition-colors">
+
+             
+             <div className="relative flex-1 bg-white group transition-colors">
                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600" size={20}/>
                <input 
                  placeholder="Shahar yoki viloyat..." 
                  className="w-full h-14 pl-12 pr-4 bg-transparent outline-none text-slate-700 font-medium placeholder:text-slate-400 placeholder:font-normal"
-                 value={filters.city}
-                 onChange={(e) => updateFilter("city", e.target.value)}
+                 value={cityInput}
+                 onChange={(e) => handleCityChange(e.target.value)}
+                 onFocus={() => { if(citySuggestions.length > 0) setShowCitySuggestions(true); }}
+                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                />
+               
+               
+               {showCitySuggestions && citySuggestions.length > 0 && (
+                 <div className="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-b-xl shadow-xl mt-1 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                    {citySuggestions.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => selectSuggestion(item, 'city')}
+                        className="px-4 py-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 text-slate-700 font-medium border-b border-slate-50 last:border-0"
+                      >
+                         <MapPin size={16} className="text-slate-400"/>
+                         {item}
+                      </div>
+                    ))}
+                 </div>
+               )}
              </div>
-             <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 px-8 md:w-auto w-full transition-colors flex items-center justify-center gap-2">
+
+             
+             <button 
+                onClick={handleSearch}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 px-8 md:w-auto w-full transition-colors flex items-center justify-center gap-2 active:scale-95"
+             >
                Izlash
              </button>
           </div>
@@ -147,21 +273,22 @@ function HomeContent() {
              <div className="flex items-center gap-2 text-slate-500 font-bold mr-2 text-base">
                 <Filter size={20}/> <span className="hidden sm:inline">Saralash:</span>
              </div>
-             {/* Filtr selectlari o'zgarishsiz qoldirildi */}
-             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.date} onChange={(e) => updateFilter("date", e.target.value)}>
+             
+             
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-slate-500 rounded-xl text-lg font-medium border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.date} onChange={(e) => updateFilter("date", e.target.value)}>
                <option value="">🗓 Sana: Barchasi</option>
                <option value="1d">So'nggi 24 soat</option>
                <option value="3d">So'nggi 3 kun</option>
                <option value="7d">So'nggi hafta</option>
              </select>
-             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.type} onChange={(e) => updateFilter("type", e.target.value)}>
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-slate-500 rounded-xl text-lg font-medium border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.type} onChange={(e) => updateFilter("type", e.target.value)}>
                <option value="">💼 Turi: Barchasi</option>
                <option value="FULL_TIME">To'liq bandlik</option>
                <option value="PART_TIME">Yarim kunlik</option>
                <option value="REMOTE">Masofaviy</option>
                <option value="PROJECT">Loyiha</option>
              </select>
-             <select className="h-12 px-5 bg-transparent hover:bg-white text-black rounded-xl text-base font-bold border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.minSalary} onChange={(e) => updateFilter("minSalary", e.target.value)}>
+             <select className="h-12 px-5 bg-transparent hover:bg-white text-slate-500 rounded-xl text-lg font-medium border border-transparent hover:border-slate-300 outline-none cursor-pointer transition-all appearance-none min-w-[140px]" value={filters.minSalary} onChange={(e) => updateFilter("minSalary", e.target.value)}>
                <option value="">💰 Maosh: Barchasi</option>
                <option value="500">$500 dan yuqori</option>
                <option value="1000">$1,000 dan yuqori</option>
@@ -171,12 +298,10 @@ function HomeContent() {
         </div>
       </div>
 
-
-      {/* --- ASOSIY KONTENT --- */}
+      
       <div className="flex-1 overflow-hidden">
         <div className="max-w-[1400px] mx-auto h-full flex">
             
-            {/* ⬅️ CHAP TOMON: RO'YXAT */}
             <div className="w-full md:w-[450px] rounded-xl lg:w-[480px] h-full overflow-y-auto border-r border-slate-200 bg-white custom-scrollbar pb-20">
                {isLoading && <div className="text-center p-10"><Loader2 className="animate-spin mx-auto text-blue-600"/></div>}
                
@@ -201,11 +326,10 @@ function HomeContent() {
 
                     <div className="flex items-start gap-4 mb-3">
                        
-                       {/* 🔥 1. ESKI KOD O'RNIGA YANGI KOMPONENT */}
                        <CompanyLogo 
                           logo={v.company?.logo} 
                           name={v.company?.name} 
-                          size="md" // O'rtacha o'lcham
+                          size="md" 
                           className="shrink-0"
                        />
 
@@ -217,7 +341,6 @@ function HomeContent() {
                        </div>
                     </div>
                     
-                    {/* ... Qolgan qismlar ... */}
                     <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
                        <MapPin size={12}/> {v.city}
                     </p>
@@ -241,7 +364,6 @@ function HomeContent() {
                <div className="h-20"></div>
             </div>
 
-            {/* ➡️ O'NG TOMON: BATAFSIL */}
             <div className="hidden md:block flex-1 h-full overflow-y-auto bg-white custom-scrollbar p-8">
                {selectedVacancy ? (
                  <div className="max-w-3xl mx-auto animate-in fade-in duration-300 pb-20">
@@ -252,11 +374,10 @@ function HomeContent() {
 
                        <div className="flex items-center gap-4 mb-4">
                           
-                          {/* 🔥 2. ESKI KOD O'RNIGA YANGI KOMPONENT */}
                           <CompanyLogo 
                              logo={selectedVacancy.company?.logo} 
                              name={selectedVacancy.company?.name} 
-                             size="lg" // Katta o'lcham
+                             size="lg" 
                           />
                           
                           <div>
@@ -290,7 +411,7 @@ function HomeContent() {
                        )}
                     </div>
                     
-                    {/* ... Maosh va Tavsif qismi ... */}
+                    
                     <div className="grid grid-cols-2 gap-4 mb-8">
                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                           <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1"><DollarSign size={12}/> Maosh</p>
@@ -306,7 +427,7 @@ function HomeContent() {
 
                     <div className="prose prose-slate max-w-none">
                        <h3 className="text-lg font-bold text-slate-900 mb-3">Vakansiya haqida</h3>
-                       {/* 🔥 HTML formatida o'qish uchun */}
+                       
                        <div 
                          className="whitespace-pre-line text-slate-600 leading-relaxed text-sm md:text-base font-medium"
                          dangerouslySetInnerHTML={{ __html: selectedVacancy.description }}

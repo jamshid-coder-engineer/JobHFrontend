@@ -24,10 +24,10 @@ class SocketService {
 
     const token = this.normalizeToken(rawToken);
 
-    // Token o‘zgarmagan + socket ulangan -> qayta ulamaymiz
+    
     if (this.socket?.connected && this.lastToken === token) return;
 
-    // Token o‘zgargan yoki socket yo‘q -> reconnect
+    
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
@@ -36,9 +36,9 @@ class SocketService {
     this.lastToken = token;
 
     this.socket = io("http://localhost:2026", {
-      auth: { token },               // <<< MUHIM
+      auth: { token },               
       transports: ["websocket", "polling"],
-      forceNew: true,                // <<< MUHIM: yangi handshake
+      forceNew: true,                
       reconnection: true,
       reconnectionAttempts: 5,
     });

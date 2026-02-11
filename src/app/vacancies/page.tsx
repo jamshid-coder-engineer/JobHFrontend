@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   MapPin, Loader2, Search, ArrowLeft, 
-  Clock, DollarSign, Building2, Filter, Briefcase, Crown 
+   DollarSign, Filter, Briefcase, Crown 
 } from "lucide-react";
 
 import { vacancyApi } from "../../features/vacancy/api/create-vacancy.api"; 
@@ -14,11 +14,10 @@ import { Button } from "../../shared/ui/button";
 import { Badge } from "../../shared/ui/badge";
 import { Input } from "../../shared/ui/input";
 
-export default function AllVacanciesPage() {
+function VacanciesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 1. URL dan filtrlarni olamiz
   const [filters, setFilters] = useState({
     q: searchParams.get("q") || "",
     city: searchParams.get("city") || "",
@@ -29,7 +28,6 @@ export default function AllVacanciesPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // 2. Data olish
   const { data, isLoading } = useQuery({
     queryKey: ["public-vacancies", filters], 
     queryFn: () => vacancyApi.getPublicVacancies(filters),
@@ -37,14 +35,12 @@ export default function AllVacanciesPage() {
 
   const vacancies = data?.data || [];
 
-  // 3. Avto-tanlash (1-element)
   useEffect(() => {
     if (vacancies.length > 0 && !selectedId) {
       setSelectedId(vacancies[0].id);
     }
-  }, [vacancies]);
+  }, [vacancies]); 
 
-  // 4. Filtrlarni yangilash va URL ga yozish
   const updateFilter = (key: string, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
@@ -59,14 +55,12 @@ export default function AllVacanciesPage() {
   const selectedVacancy = vacancies.find((v: any) => v.id === selectedId);
 
   return (
-    // Asosiy konteyner: h-screen (butun ekran)
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       
-      {/* --- HEADER (Qidiruv + Filtrlar) --- */}
+      {/* HEADER FILTERS */}
       <div className="bg-white border-b border-slate-200 z-20 px-4 py-3 shadow-sm">
         <div className="max-w-[1400px] mx-auto w-full space-y-3">
           
-          {/* 1. Qidiruv qatori */}
           <div className="flex gap-3 items-center">
              <Link href="/">
                <Button variant="ghost" size="icon" className="shrink-0 rounded-full hover:bg-slate-100">
@@ -99,13 +93,11 @@ export default function AllVacanciesPage() {
              </div>
           </div>
 
-          {/* 2. Filtrlar (Dropdowns) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
              <div className="flex items-center gap-1 text-slate-500 text-sm font-bold mr-2">
                 <Filter size={14}/> Filtrlar:
              </div>
              
-             {/* Sana */}
              <select 
                className="bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
                value={filters.date}
@@ -117,7 +109,6 @@ export default function AllVacanciesPage() {
                <option value="7d">So'nggi hafta</option>
              </select>
 
-             {/* Ish Turi */}
              <select 
                className="bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
                value={filters.type}
@@ -130,7 +121,6 @@ export default function AllVacanciesPage() {
                <option value="PROJECT">Loyiha</option>
              </select>
 
-             {/* Maosh */}
              <select 
                className="bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
                value={filters.minSalary}
@@ -145,11 +135,9 @@ export default function AllVacanciesPage() {
         </div>
       </div>
 
-      {/* --- CONTENT (SPLIT VIEW) --- */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-[1400px] mx-auto h-full flex">
             
-            {/* ⬅️ CHAP TOMON: RO'YXAT (Scroll) */}
             <div className="w-full md:w-[450px] lg:w-[480px] h-full overflow-y-auto border-r border-slate-200 bg-white custom-scrollbar">
                {isLoading && <div className="text-center p-10"><Loader2 className="animate-spin mx-auto text-blue-600"/></div>}
                
@@ -197,16 +185,13 @@ export default function AllVacanciesPage() {
                  </div>
                ))}
                
-               {/* List pastida bo'sh joy */}
                <div className="h-20"></div>
             </div>
 
-            {/* ➡️ O'NG TOMON: BATAFSIL (Faqat Desktop) */}
             <div className="hidden md:block flex-1 h-full overflow-y-auto bg-white custom-scrollbar p-8">
                {selectedVacancy ? (
                  <div className="max-w-3xl mx-auto animate-in fade-in duration-300 pb-20">
                     
-                    {/* Header */}
                     <div className="mb-6">
                        <h1 className="text-2xl font-black text-slate-900 mb-2">{selectedVacancy.title}</h1>
                        <div className="flex items-center gap-2 text-sm font-bold text-slate-600 mb-4">
@@ -224,7 +209,6 @@ export default function AllVacanciesPage() {
 
                     <div className="h-px bg-slate-100 w-full mb-6"></div>
 
-                    {/* Details Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                           <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1"><DollarSign size={12}/> Maosh</p>
@@ -238,7 +222,6 @@ export default function AllVacanciesPage() {
                        </div>
                     </div>
 
-                    {/* Description */}
                     <div className="prose prose-slate max-w-none">
                        <h3 className="text-lg font-bold text-slate-900 mb-3">Vakansiya haqida</h3>
                        <div className="whitespace-pre-line text-slate-600 leading-relaxed text-sm md:text-base">
@@ -258,5 +241,14 @@ export default function AllVacanciesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+
+export default function AllVacanciesPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className="animate-spin text-blue-600 w-10 h-10"/></div>}>
+      <VacanciesContent />
+    </Suspense>
   );
 }

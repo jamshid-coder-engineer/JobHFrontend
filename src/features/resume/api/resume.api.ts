@@ -7,7 +7,7 @@ export const resumeApi = {
   },
 
   create: async (dto: any) => {
-    // Bekent faqat quyidagilarni qabul qiladi (forbidNonWhitelisted: true tufayli)
+    
     const payload = {
       fullName: dto.fullName,
       title: dto.title,
@@ -21,7 +21,7 @@ export const resumeApi = {
   },
 
   update: async (dto: any) => {
-    // ID va boshqa tizimli maydonlarni olib tashlaymiz
+    
     const payload = {
       fullName: dto.fullName,
       title: dto.title,

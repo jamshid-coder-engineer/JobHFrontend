@@ -14,7 +14,7 @@ export default function MyApplicationsPage() {
     const fetchApplications = async () => {
       try {
         const response = await applicationApi.getMyApplications();
-        // Bekentingiz response.data ichida massiv qaytaradi
+        
         setApplications(response.data || []);
       } catch (error) {
         toast.error("Arizalarni yuklashda xatolik yuz berdi");

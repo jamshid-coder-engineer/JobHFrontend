@@ -2,26 +2,26 @@
 
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form"; // 👈 Controller qo'shildi
+import { useForm, Controller } from "react-hook-form"; 
 import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Building2, AlertCircle } from "lucide-react";
 
-// Importlarni o'zingizdagi yo'llarga qarab to'g'irlang
+
 import { vacancyApi } from "../../../../features/vacancy/api/create-vacancy.api";
 import { companyApi } from "../../../../features/company/api/company.api";
 import { PremiumBanner } from "../../../../shared/ui/premium-banner";
 import { Button } from "../../../../shared/ui/button";
 import { Input } from "../../../../shared/ui/input";
 
-// 🔥 BIZ YASAGAN EDITORNI IMPORT QILAMIZ
+
 import { RichEditor } from "../../../../shared/ui/rich-editor";
 
 export default function CreateVacancyPage() {
   const router = useRouter();
   
-  // 1. react-hook-form ni sozlaymiz
-  // control - bu Controller uchun kerak
+  
+  
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     defaultValues: {
       title: "",
@@ -29,11 +29,11 @@ export default function CreateVacancyPage() {
       employmentType: "FULL_TIME",
       salaryFrom: "",
       salaryTo: "",
-      description: "" // Boshlanishiga bo'sh matn
+      description: "" 
     }
   });
 
-  // 2. KOMPANIYA MA'LUMOTLARI
+  
   const { data: companyData, isLoading: isCompanyLoading } = useQuery({
     queryKey: ["my-company"],
     queryFn: () => companyApi.getMyCompany(),
@@ -43,7 +43,7 @@ export default function CreateVacancyPage() {
 
   const myCompany = Array.isArray(companyData?.data) ? companyData.data[0] : companyData?.data;
 
-  // 3. VAKANSIYA YARATISH MUTATSIYASI
+  
   const createMutation = useMutation({
     mutationFn: (data: any) => vacancyApi.create(data),
     onSuccess: () => {
@@ -56,7 +56,7 @@ export default function CreateVacancyPage() {
   });
 
   const onSubmit = (data: any) => {
-    // Tavsif bo'sh emasligini yana bir bor tekshiramiz (HTML teglaridan tozilab)
+    
     const cleanText = data.description.replace(/<[^>]+>/g, '');
     if (cleanText.trim().length < 10) {
       toast.error("Iltimos, tavsifni batafsilroq yozing!");
@@ -71,7 +71,7 @@ export default function CreateVacancyPage() {
     createMutation.mutate(payload);
   };
 
-  // --- LOADING ---
+  
   if (isCompanyLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -80,7 +80,7 @@ export default function CreateVacancyPage() {
     );
   }
 
-  // --- ⛔️ AGAR KOMPANIYA BO'LMASA ---
+  
   if (!myCompany) {
     return (
       <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
@@ -110,9 +110,9 @@ export default function CreateVacancyPage() {
     );
   }
 
-  // --- ✅ FORMA ---
+  
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 space-y-8 pb-32"> {/* pb-32 qo'shildi (pastdan joy) */}
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-8 pb-32"> {}
       
       <PremiumBanner />
 
@@ -140,7 +140,7 @@ export default function CreateVacancyPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           
-          {/* Lavozim */}
+          {}
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">Lavozim nomi</label>
             <Input 
@@ -151,7 +151,7 @@ export default function CreateVacancyPage() {
             {errors.title && <span className="text-red-500 text-xs font-bold">{String(errors.title.message)}</span>}
           </div>
 
-          {/* Shahar va Bandlik */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Shahar</label>
@@ -176,7 +176,7 @@ export default function CreateVacancyPage() {
           </div>
           
 
-          {/* MAOSH QISMI */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Maosh (dan)</label>
@@ -221,7 +221,7 @@ export default function CreateVacancyPage() {
             </div>
           </div>
 
-          {/* 🔥 TAVSIF QISMI (RICH EDITOR BILAN) */}
+          {}
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">Batafsil tavsif</label>
             
@@ -232,7 +232,7 @@ export default function CreateVacancyPage() {
               render={({ field }) => (
                 <RichEditor
                   value={field.value}
-                  onChange={field.onChange} // Matn o'zgarganda formaga yozadi
+                  onChange={field.onChange} 
                   placeholder="Nomzoddan nimalar talab qilinadi? Batafsil yozing..."
                 />
               )}

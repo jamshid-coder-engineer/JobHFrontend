@@ -9,7 +9,7 @@ import { Badge } from "../../../shared/ui/badge";
 import Link from "next/link";
 import { SaveButton } from "../../../features/vacancy/ui/save-button"; 
 
-// 👇 ENG MUHIM JOYI: Portni va Papkani to'g'irlaymiz
+
 const BASE_URL = "http://localhost:2026/uploads/images/";
 
 export default function CompanyPublicPage() {
@@ -38,22 +38,22 @@ export default function CompanyPublicPage() {
     <div className="min-h-screen bg-slate-50 py-8 px-4 md:py-12">
       <div className="max-w-5xl mx-auto space-y-6">
         
-        {/* Orqaga qaytish */}
+        {}
         <Button variant="ghost" onClick={() => router.back()} className="hover:bg-transparent hover:text-blue-600 pl-0">
            <ArrowLeft className="mr-2 h-4 w-4"/> Orqaga qaytish
         </Button>
 
-        {/* 1. HEADER KARTASI */}
+        {}
         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
            
            <div className="flex flex-col md:flex-row items-start gap-6">
               
-              {/* LOGO QISMI */}
+              {}
               <div className="shrink-0">
                  {company.logo ? (
                     <img 
-                      // 👇 URL birlashtirildi
+                      
                       src={`${BASE_URL}${company.logo}`} 
                       alt={company.name} 
                       className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover border border-slate-100 shadow-inner"
@@ -66,7 +66,7 @@ export default function CompanyPublicPage() {
                  )}
               </div>
 
-              {/* INFO */}
+              
               <div className="flex-1 space-y-4 pt-2">
                  <div>
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">{company.name}</h1>
@@ -92,7 +92,7 @@ export default function CompanyPublicPage() {
            </div>
         </div>
 
-        {/* 2. VAKANSIYALAR RO'YXATI */}
+        
         <div className="space-y-4">
            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
               <Briefcase className="text-blue-600"/>
